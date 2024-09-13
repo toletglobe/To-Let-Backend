@@ -2,20 +2,19 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PropertySchema = new Schema({
-  userId: {
+  ownerName: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
-  },
-  ownerName: {
-    type: String,
     required: true,
   },
   ownersContactNumber: {
     type: String,
     required: true,
   },
-  ownersAlternateContactNumber: {
+  pin: {
+    type: Number,
+  },
+  city: {
     type: String,
   },
   locality: {
@@ -75,14 +74,16 @@ const PropertySchema = new Schema({
     type: Boolean,
     required: true,
   },
-  subscriptionAmount: {
+  rent: {
     type: Number,
+  },
+  security: {
+    type: String,
   },
   photos: {
     type: [String], // change to an array of strings to store cloudinary links in db
     required: true,
   },
-  //
   squareFeetArea: {
     type: Number,
     required: true,
@@ -99,11 +100,6 @@ const PropertySchema = new Schema({
   },
   aboutTheProperty: {
     type: String,
-    required: true,
-    
-  },
-  smokersPreference: {
-    type: Boolean,
     required: true,
     
   },

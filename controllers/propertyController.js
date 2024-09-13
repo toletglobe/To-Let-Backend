@@ -1,13 +1,14 @@
 const Property = require("../models/propertyModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
+const { getCityFromPin } = require("../utils/pinCodeService.js");
 
 const addProperty = async (req, res) => {
   try {
     const {
-      userId,
       ownerName,
       ownersContactNumber,
-      ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
@@ -21,7 +22,8 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subcriptionAmount,
+      rent,
+      security,
       squareFeetArea,
       appliances,
       amenities,
@@ -32,10 +34,10 @@ const addProperty = async (req, res) => {
 
     if (
       !(
-        userId ||
         ownerName ||
         ownersContactNumber ||
-        ownersAlternateContactNumber ||
+        pin||
+        city||
         locality ||
         address ||
         spaceType ||
@@ -49,18 +51,25 @@ const addProperty = async (req, res) => {
         typeOfWashroom ||
         coolingFacility ||
         carParking ||
-        subcriptionAmount ||
+        rent||
+        security||
         squareFeetArea||
         appliances||
         amenities||
         aboutTheProperty||
-        smokersPreference||
         comments
       )
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    let location;
+    try {
+      location = await getCityFromPin(pin);
+      const { city, locality } = location; // Destructure both city and locality
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid pin code" });
+    }
     /**
      * Cloudinary logic to handle multiple files
      */
@@ -83,10 +92,10 @@ const addProperty = async (req, res) => {
     const imageUrls = imgResults.map((result) => result.url);
 
     const data = {
-      userId,
       ownerName,
       ownersContactNumber,
-      ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
@@ -100,12 +109,12 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subcriptionAmount,
+      rent,
+      security,
       squareFeetArea,
       appliances,
       amenities,
       aboutTheProperty,
-      smokersPreference,
       comments,
       photos: imageUrls,
     };
@@ -155,10 +164,10 @@ const updateProperty = async (req, res) => {
 
     // Get the fields from the update form
     const {
-      userId,
       ownerName,
       ownersContactNumber,
-      ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
@@ -172,28 +181,38 @@ const updateProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subcriptionAmount,
+      rent,
+      security,
       squareFeetArea,
       appliances,
       amenities,
       aboutTheProperty,
-      smokersPreference,
       comments,
     } = req.body;
     console.log(req.body);
 
+    if (pin) {
+      let location;
+      try {
+        location = await getCityFromPin(pin);
+        const { city, locality } = location;
+        property.city = city;
+        property.locality = locality;
+        property.pin = pin;
+      } catch (error) {
+        return res.status(400).json({ message: "Invalid pin code" });
+      }
+    }
+
     // Update the property fields
-    property.userId = userId ?? property.userId
     property.ownerName = ownerName ?? property.ownerName;
-    property.ownersContactNumber =
-      ownersContactNumber ?? property.ownersContactNumber;
-    property.ownersAlternateContactNumber =
-      ownersAlternateContactNumber ?? property.ownersAlternateContactNumber;
+    property.ownersContactNumber = ownersContactNumber ?? property.ownersContactNumber;
+    property.pin =   property.pin?? property.pin;
+    property.city =   property.city?? property.city;
     property.locality = locality ?? property.locality;
     property.address = address ?? property.address;
     property.spaceType = spaceType ?? property.spaceType;
-    property.petsAllowed =
-      petsAllowed !== undefined ? petsAllowed : property.petsAllowed;
+    property.petsAllowed =petsAllowed !== undefined ? petsAllowed : property.petsAllowed;
     property.preference = preference ?? property.preference;
     property.bachelors = bachelors ?? property.bachelors;
     property.type = type ?? property.type;
@@ -204,14 +223,13 @@ const updateProperty = async (req, res) => {
     property.coolingFacility = coolingFacility ?? property.coolingFacility;
     property.carParking =
       carParking !== undefined ? carParking : property.carParking;
-    property.subscriptionAmount =
-      subscriptionAmount ?? property.subscriptionAmount;
+    property.rent =   property.rent?? property.rent;
+    property.security =   property.security?? property.security;
     property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
     property.squareFeetArea = squareFeetArea ?? property.squareFeetArea;
     property.appliances = appliances ?? property.appliances;
     property.amenities = amenities ?? property.amenities;
     property.aboutTheProperty = aboutTheProperty ?? property.aboutTheProperty;
-    property.smokersPreference = smokersPreference ?? property.smokersPreference;
     property.comments = comments ?? property.comments;
 
 
