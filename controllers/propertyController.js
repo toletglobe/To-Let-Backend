@@ -1,22 +1,22 @@
 const Property = require("../models/propertyModel.js");
 const Review = require("../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
+const { getCityFromPin } = require("../utils/pinCodeService.js");
+
 
 const addProperty = async (req, res) => {
   try {
-    const userId = req.userId;
+    const firstName = req.firstName;
 
     const {
-      ownerName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
-      propertyType,
-      currentResidenceOfOwner, //correct name
-      rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -27,21 +27,24 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subscriptionAmount,
-      locationLink,
+      rent,
+      security,
+      squareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments
     } = req.body;
 
     if (
       !(
-        ownerName &&
+        firstName &&
         ownersContactNumber &&
+        pin &&
+        city &&
         locality &&
         address &&
         spaceType &&
-        propertyType &&
-        currentResidenceOfOwner &&
-        rent !== undefined &&
-        concession !== undefined &&
         petsAllowed !== undefined &&
         preference &&
         bachelors &&
@@ -52,31 +55,39 @@ const addProperty = async (req, res) => {
         typeOfWashroom &&
         coolingFacility &&
         carParking !== undefined &&
-        subscriptionAmount !== undefined &&
-        locationLink
+        rent !== undefined &&
+        security !==undefined &&
+        squareFeetArea&&
+        appliances&&
+        amenities
       )
     ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const formattedConcession = concession === "true";
     const formattedPetsAllowed = petsAllowed === "true";
     const formattedCarParking = carParking === "true";
 
     const formattedRent = Number(rent);
-    const formattedSubscriptionAmount = Number(subscriptionAmount);
+    const formattedsecurity = Number(security);
     const formattedBhk = Number(bhk);
-    const formattedFloor = Number(floor);
 
     if (
       isNaN(formattedRent) ||
-      isNaN(formattedSubscriptionAmount) ||
-      isNaN(formattedBhk) ||
-      isNaN(formattedFloor)
+      isNaN(formattedsecurity) ||
+      isNaN(formattedBhk )
     ) {
       return res
         .status(400)
         .json({ message: "Numeric fields must be valid numbers" });
+    }
+
+    let location;
+    try {
+      location = await getCityFromPin(pin);
+      const { city, locality } = location; // Destructure both city and locality
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid pin code" });
     }
 
     /**
@@ -101,30 +112,33 @@ const addProperty = async (req, res) => {
     const imageUrls = imgResults.map((result) => result.url);
 
     const data = {
-      userId,
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
-      locality,
+      pin: location.pin,
+      city: location.city,
+      locality: location.locality,
       address,
       spaceType,
-      propertyType,
-      currentResidenceOfOwner,
-      rent: formattedRent,
-      concession: formattedConcession,
       petsAllowed: formattedPetsAllowed,
       preference,
       bachelors,
       type,
-      bhk: formattedBhk,
-      floor: formattedFloor,
+      bhk:formattedBhk ,
+      floor,
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
       carParking: formattedCarParking,
-      subscriptionAmount: formattedSubscriptionAmount,
-      locationLink,
+      rent: formattedRent,
+      security: formattedsecurity,
       photos: imageUrls,
+      squareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments
     };
 
     const property = await Property.create(data);
@@ -172,16 +186,15 @@ const updateProperty = async (req, res) => {
 
     // Get the fields from the update form
     const {
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
-      propertyType,
-      currentResidenceOfOwner,
-      rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -192,26 +205,40 @@ const updateProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subscriptionAmount,
-      commentByAnalyst,
-      locationLink,
+      rent,
+      security,
+      squareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments
     } = req.body;
     console.log(req.body);
 
+    if (pin) {
+      let location;
+      try {
+        location = await getCityFromPin(pin);
+        const { city, locality } = location;
+        property.city = city;
+        property.locality = locality;
+        property.pin = pin;
+      } catch (error) {
+        return res.status(400).json({ message: "Invalid pin code" });
+      }
+    }
+
     // Update the property fields
-    property.ownerName = ownerName ?? property.ownerName;
+    property.  lastName =   lastName ?? property.  lastName;
     property.ownersContactNumber =
       ownersContactNumber ?? property.ownersContactNumber;
     property.ownersAlternateContactNumber =
       ownersAlternateContactNumber ?? property.ownersAlternateContactNumber;
+      property.pin= pin ?? property. pin;
+      property. city = city ?? property. city
     property.locality = locality ?? property.locality;
     property.address = address ?? property.address;
     property.spaceType = spaceType ?? property.spaceType;
-    property.propertyType = propertyType ?? property.propertyType;
-    property.currentResidenceOfOwner =
-      currentResidenceOfOwner ?? property.currentResidenceOfOwner;
-    property.rent = rent ?? property.rent;
-    property.concession = concession ?? property.concession;
     property.petsAllowed =
       petsAllowed !== undefined ? petsAllowed : property.petsAllowed;
     property.preference = preference ?? property.preference;
@@ -224,10 +251,15 @@ const updateProperty = async (req, res) => {
     property.coolingFacility = coolingFacility ?? property.coolingFacility;
     property.carParking =
       carParking !== undefined ? carParking : property.carParking;
-    property.subscriptionAmount =
-      subscriptionAmount ?? property.subscriptionAmount;
-    property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
-    property.locationLink = locationLink ?? property.locationLink;
+      property.rent = rent ?? property.rent;
+    property.security = security ?? property.security;
+    property.squareFeetArea = squareFeetArea ?? property.squareFeetArea;
+    property.appliances = appliances ?? property.appliances;
+    property.amenities = amenities ?? property.amenities;
+    property.aboutTheProperty = aboutTheProperty ?? property.aboutTheProperty;
+    property.comments = comments ?? property.comments;
+
+
 
     // Save the updated property
     const updatedProperty = await property.save();
@@ -329,10 +361,8 @@ const getFilteredProperties = async (req, res) => {
       bhk,
       locality,
       petsAllowed,
-      spaceType,
-      propertyType,
-      currentResidenceOfOwner,
       preference,
+      spaceType,
       bachelors,
       type,
       floor,
@@ -340,7 +370,6 @@ const getFilteredProperties = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      concession,
     } = req.query;
 
     const filter = {};
@@ -364,12 +393,7 @@ const getFilteredProperties = async (req, res) => {
     // Handling spaceType filter
     if (spaceType) filter.spaceType = spaceType;
 
-    // Handling propertyType filter
-    if (propertyType) filter.propertyType = propertyType;
 
-    // Handling currentResidenceOfOwner filter
-    if (currentResidenceOfOwner)
-      filter.currentResidenceOfOwner = currentResidenceOfOwner;
 
     // Handling preference filter
     if (preference) filter.preference = preference;
@@ -382,8 +406,8 @@ const getFilteredProperties = async (req, res) => {
 
     // Handling floor filter
     if (floor) {
-      const floorNumber = Number(floor);
-      if (!isNaN(floorNumber)) filter.floor = floorNumber;
+      const floorStr = String(floor);
+      if (!isNaN(floorStr )) filter.floor = floorStr ;
     }
 
     // Handling nearestLandmark filter
@@ -398,8 +422,6 @@ const getFilteredProperties = async (req, res) => {
     // Handling carParking filter
     if (carParking !== undefined) filter.carParking = carParking === "true";
 
-    // Handling concession filter
-    if (concession !== undefined) filter.concession = concession === "true";
 
     // Fetch filtered properties from the database
     const properties = await Property.find(filter);
@@ -421,14 +443,14 @@ const getFilteredProperties = async (req, res) => {
 
 const addReview = async (req, res) => {
   try {
-    const { propertyId, user, rating, comment, username } = req.body;
+    const { propertyId, user, rating, comment, firstNamename } = req.body;
 
     const review = new Review({
       property: propertyId,
       user,
       rating,
       comment,
-      username,
+      firstName,
     });
     await review.save();
 

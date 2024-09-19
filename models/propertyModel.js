@@ -2,14 +2,13 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PropertySchema = new Schema({
-  userId: {
+  firstName: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  ownerName: {
+  lastName: {
     type: String,
-    required: true,
   },
   ownersContactNumber: {
     type: String,
@@ -17,6 +16,14 @@ const PropertySchema = new Schema({
   },
   ownersAlternateContactNumber: {
     type: String,
+  },
+  pin: {
+    type: Number,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
   },
   locality: {
     type: String,
@@ -29,23 +36,6 @@ const PropertySchema = new Schema({
   spaceType: {
     type: String,
     enum: ["Commercial", "Residential"],
-    required: true,
-  },
-  propertyType: {
-    type: String,
-    enum: ["House", "Flat", "PG", "Office", "Shop"],
-    required: true,
-  },
-  currentResidenceOfOwner: {
-    type: String,
-    enum: ["Same City", "Same Place", "Different City"],
-  },
-  rent: {
-    type: Number,
-    required: true,
-  },
-  concession: {
-    type: Boolean,
     required: true,
   },
   petsAllowed: {
@@ -72,7 +62,7 @@ const PropertySchema = new Schema({
     required: true,
   },
   floor: {
-    type: Number,
+    type: String,
     required: true,
   },
   nearestLandmark: {
@@ -92,23 +82,41 @@ const PropertySchema = new Schema({
     type: Boolean,
     required: true,
   },
-  subscriptionAmount: {
+  rent: {
     type: Number,
+    required: true,
   },
-  commentByAnalyst: {
+  security: {
     type: String,
+    required: true,
   },
   photos: {
     type: [String], // change to an array of strings to store cloudinary links in db
     required: true,
   },
-  locationLink: {
-    type: String,
+  squareFeetArea: {
+    type: Number,
     required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  appliances: {
+    type: String,
+    required: true,
+    
+  },
+  amenities: {
+    type: String,
+    required: true,
+    
+  },
+  aboutTheProperty: {
+    type: String,
+    required: true,
+    
+  },
+  comments: {
+    type: String,
+    required: true,
+    
   },
   reviews: [
     {
