@@ -62,7 +62,15 @@ exports.login = async (req, res) => {
       expiresIn: "3d",
     });
 
-    res.json({ token });
+    res.json({ 
+        token, 
+         user : {
+         id : user.id, 
+         username : user.username,
+         email : user.email,
+         role : user.role
+       }
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).json("Internal server error");
