@@ -4,8 +4,10 @@ const {
   resetPassword,
   userSignup,
   userSignin,
-  verifyAccount
+  verifyAccount,
+  accountSecurity
 } = require("../controllers/authController");
+const authenticate = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -14,5 +16,6 @@ router.post("/login", userSignin);
 router.get("/verify/:id", verifyAccount);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
+router.patch("/change-password",authenticate, accountSecurity);
 
 module.exports = router;

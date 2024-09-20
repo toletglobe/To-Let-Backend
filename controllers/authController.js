@@ -116,12 +116,10 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 
   try {
     await sendEmail(mailOptions);
-    res
-      .status(200)
-      .json({
-        message:
-          "Registration successful! Check your email for account verification.",
-      });
+    res.status(200).json({
+      message:
+        "Registration successful! Check your email for account verification.",
+    });
   } catch (error) {
     return next(
       new ApiError(
@@ -180,7 +178,6 @@ exports.userSignin = asyncHandler(async (req, res, next) => {
   if (!user.isVerified) {
     return next(new ApiError(403, "Please verify your account first."));
   }
-
   sendToken(user, 200, res);
 });
 
@@ -332,4 +329,30 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   res
     .status(200)
     .json({ message: "Your password has been reset successfully." });
+});
+
+exports.accountSecurity = asyncHandler(async (req, res, next) => {
+  const { currentpassword, newpassword } = req.body;
+  console.log(currentpassword, newpassword);
+  
+  if (!currentpassword || !newpassword) {
+    return next(
+      new ApiError(
+        400,
+        "Please provide both current password and new password."
+      )
+    );
+  }
+  const user = await User.findById(req.userId).select("+password");
+  if (!user) {
+    return next(new ApiError(400, "User not found."));
+  }
+  // Compare the password with the stored hash
+  const isMatch = await user.comparePassword(currentpassword);
+  if (!isMatch) {
+    return next(new ApiError(401, "Please enter the correct old password."));
+  }
+  user.password = newpassword;
+  await user.save();
+  sendToken(user, 201, res);
 });
