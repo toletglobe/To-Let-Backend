@@ -7,13 +7,13 @@ const reviewSchema = new mongoose.Schema(
       ref: "Property",
       required: true,
     },
-    user: {
+    firstName: {  // userID
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    username: {
-      type: String,
+    lastName: {    //username
+      type: String,  
       required: true,
     },
     rating: {

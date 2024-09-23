@@ -229,6 +229,7 @@ const updateProperty = async (req, res) => {
     }
 
     // Update the property fields
+    property.  firstName =    firstName ?? property.   firstName;
     property.  lastName =   lastName ?? property.  lastName;
     property.ownersContactNumber =
       ownersContactNumber ?? property.ownersContactNumber;
@@ -443,14 +444,15 @@ const getFilteredProperties = async (req, res) => {
 
 const addReview = async (req, res) => {
   try {
-    const { propertyId, user, rating, comment, firstNamename } = req.body;
+    const { propertyId,  lastName, rating, comment, firstName , slug} = req.body;
 
     const review = new Review({
       property: propertyId,
-      user,
+      firstName,
+      lastName,
       rating,
       comment,
-      firstName,
+      slug,
     });
     await review.save();
 
