@@ -11,9 +11,8 @@ const allBlogs = async (req, res) => {
 };
 
 const createBlog = async (req, res) => {
-  // const dataWithCloudinaryImgUrl = { ...req.body, image: req.file.path };
-  // const newBlog = new Blog(dataWithCloudinaryImgUrl);
-  const newBlog = new Blog(req.body);
+  const dataWithCloudinaryImgUrl = { ...req.body, image: req.file.path };
+  const newBlog = new Blog(dataWithCloudinaryImgUrl);
   await newBlog.save();
   res.send("success");
 };
