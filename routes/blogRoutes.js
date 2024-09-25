@@ -6,6 +6,7 @@ const {
   blogDetails,
   createBlog,
 } = require("../controllers/blogController");
+const authenticate = require("../middlewares/authMiddleware.js");
 
 const upload = require("../middlewares/multer.js");
 
@@ -13,9 +14,8 @@ const router = express.Router();
 
 router.route("/blogs").get(allBlogs);
 
-router.route("/blogs/updateViews/:id").post(updateViews);
-
-router.route("/blogs/updateLikes/:id").post(updateLikes);
+router.route("/blogs/updateViews/:id").get(updateViews);
+router.route("/blogs/updateLikes/:id").get(authenticate, updateLikes);
 
 router.route("/blogs/:slug").get(blogDetails);
 
