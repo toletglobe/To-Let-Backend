@@ -7,7 +7,7 @@ const { ApiError } = require("../utils/ApiError");
 
 // User SignUp
 exports.userSignup = asyncHandler(async (req, res, next) => {
-  const { username, email, password, phone, role, userType, answer } = req.body;
+  const { firstName, lastName, email, password, phone, role, userType, answer } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -17,7 +17,8 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 
   // Create new user
   const user = new User({
-    username,
+    firstName,
+    lastName,
     email,
     password,
     phoneNumber: phone,
@@ -334,7 +335,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 exports.accountSecurity = asyncHandler(async (req, res, next) => {
   const { currentpassword, newpassword } = req.body;
   console.log(currentpassword, newpassword);
-  
+
   if (!currentpassword || !newpassword) {
     return next(
       new ApiError(
