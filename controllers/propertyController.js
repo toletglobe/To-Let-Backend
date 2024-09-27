@@ -343,6 +343,8 @@ const getFilteredProperties = async (req, res) => {
       coolingFacility,
       carParking,
       concession,
+      page = 1,   // Default page 1
+      limit = 10, // Default limit to 10 results per page
     } = req.query;
 
     const filter = {};
@@ -357,30 +359,30 @@ const getFilteredProperties = async (req, res) => {
       if (!isNaN(bhkNumber)) filter.bhk = bhkNumber;
     }
 
-    // Handling locality filter
-    if (locality) filter.locality = locality;
+    // Handling locality filter (trim and case insensitive)
+    if (locality) filter.locality = locality.trim();
 
     // Handling petsAllowed filter
     if (petsAllowed !== undefined) filter.petsAllowed = petsAllowed === "true";
 
     // Handling spaceType filter
-    if (spaceType) filter.spaceType = spaceType;
+    if (spaceType) filter.spaceType = spaceType.trim();
 
     // Handling propertyType filter
-    if (propertyType) filter.propertyType = propertyType;
+    if (propertyType) filter.propertyType = propertyType.trim();
 
     // Handling currentResidenceOfOwner filter
     if (currentResidenceOfOwner)
-      filter.currentResidenceOfOwner = currentResidenceOfOwner;
+      filter.currentResidenceOfOwner = currentResidenceOfOwner.trim();
 
     // Handling preference filter
-    if (preference) filter.preference = preference;
+    if (preference) filter.preference = preference.trim();
 
     // Handling bachelors filter
-    if (bachelors) filter.bachelors = bachelors;
+    if (bachelors) filter.bachelors = bachelors.trim();
 
     // Handling type (furnishing) filter
-    if (type) filter.type = type;
+    if (type) filter.type = type.trim();
 
     // Handling floor filter
     if (floor) {
@@ -389,13 +391,13 @@ const getFilteredProperties = async (req, res) => {
     }
 
     // Handling nearestLandmark filter
-    if (nearestLandmark) filter.nearestLandmark = nearestLandmark;
+    if (nearestLandmark) filter.nearestLandmark = nearestLandmark.trim();
 
     // Handling typeOfWashroom filter
-    if (typeOfWashroom) filter.typeOfWashroom = typeOfWashroom;
+    if (typeOfWashroom) filter.typeOfWashroom = typeOfWashroom.trim();
 
     // Handling coolingFacility filter
-    if (coolingFacility) filter.coolingFacility = coolingFacility;
+    if (coolingFacility) filter.coolingFacility = coolingFacility.trim();
 
     // Handling carParking filter
     if (carParking !== undefined) filter.carParking = carParking === "true";
@@ -403,13 +405,20 @@ const getFilteredProperties = async (req, res) => {
     // Handling concession filter
     if (concession !== undefined) filter.concession = concession === "true";
 
-    // Fetch filtered properties from the database
-    const properties = await Property.find(filter);
+    // Pagination logic
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Fetch filtered properties from the database with pagination
+    const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
     // Send successful response with filtered properties
     res.status(200).json({
       success: true,
       data: properties,
+      page: pageNum,
+      limit: limitNum,
     });
   } catch (error) {
     // Send error response
@@ -420,6 +429,7 @@ const getFilteredProperties = async (req, res) => {
     });
   }
 };
+
 
 const addReview = async (req, res) => {
   try {

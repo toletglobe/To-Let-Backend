@@ -10,10 +10,14 @@ const USER_TYPE = ["buyer", "tenant", "owner"];
 
 // Define the User schema
 const UserSchema = new mongoose.Schema({
-  // Username field - required and trimmed
-  username: {
+  // First Name field - required and trimmed
+  firstName: {
     type: String,
-    required: [true, "Username is required"],
+    required: [true, "First Name is required"],
+    trim: true,
+  },
+  lastName: {
+    type: String,
     trim: true,
   },
 
