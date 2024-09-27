@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const slugify = require("slugify");
 
 const PropertySchema = new Schema({
   userId: {
@@ -99,11 +100,16 @@ const PropertySchema = new Schema({
     type: String,
   },
   photos: {
-    type: [String], // change to an array of strings to store cloudinary links in db
+    type: [String],
     required: true,
   },
   locationLink: {
     type: String,
+    required: true,
+  },
+  slug: {
+    type: String,
+    unique: true,
     required: true,
   },
   createdAt: {
@@ -116,6 +122,18 @@ const PropertySchema = new Schema({
       ref: "Review",
     },
   ],
+});
+
+// Pre-save hook to generate slug including BHK
+PropertySchema.pre("save", function (next) {
+  if (this.isModified("locality") || this.isModified("propertyType") || this.isModified("bhk")) {
+    // Generate the slug using locality, propertyType, and bhk
+    this.slug = slugify(`${this.locality} ${this.propertyType} ${this.bhk}BHK`, {
+      lower: true, // Lowercase slug
+      strict: true, // Remove special characters
+    });
+  }
+  next();
 });
 
 const Property = mongoose.model("Property", PropertySchema);

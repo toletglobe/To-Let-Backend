@@ -1,7 +1,8 @@
 const Property = require("../models/propertyModel.js");
 const Review = require("../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
-
+const { asyncHandler } = require('../utils/asyncHandler.js');
+const { ApiError } = require("../utils/ApiError.js");
 const addProperty = async (req, res) => {
   try {
     const userId = req.userId;
@@ -134,6 +135,7 @@ const addProperty = async (req, res) => {
         .status(500)
         .json({ message: "Something went wrong while creating property" });
     }
+    await property.save();
 
     return res.status(201).json({
       statusCode: 201,
@@ -473,7 +475,18 @@ const deleteReview = async (req, res) => {
   }
 };
 
+const propertyBySlug = asyncHandler(
+  async (req, res, next) => {
+    const property = await Property.findOne({ slug: { $regex: ".*" + req.params.slug + ".*", $options: "i" } });
+    if (!property) {
+      return next(new ApiError(400, "Property not found"));
+    }
+    res.status(200).json(property);
+  }
+);
+
 module.exports = {
+  propertyBySlug,
   addProperty,
   updateProperty,
   deleteProperty,

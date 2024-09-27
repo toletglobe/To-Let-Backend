@@ -8,6 +8,7 @@ const {
   getFilteredProperties,
   addReview,
   deleteReview,
+  propertyBySlug,
 } = require("../controllers/propertyController.js");
 const upload = require("../middlewares/multer.js");
 const authenticate = require("../middlewares/authMiddleware.js");
@@ -40,6 +41,9 @@ router.route("/:id").get(getPropertyById); //change names and methods according 
 router.post("/add-review", addReview);
 
 router.delete("/reviews/:id", deleteReview);
+
+// Get property by slug
+router.get("/slug/:slug", propertyBySlug);
 
 //e.g
 // GET http://localhost:8000/api/v1/property/filter?minPrice=10000&maxPrice=20000
