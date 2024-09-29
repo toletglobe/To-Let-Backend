@@ -1,14 +1,13 @@
 const Property = require("../models/propertyModel.js");
 const Review = require("../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
-const { getCityFromPin } = require("../utils/pinCodeService.js");
+// const { getCityFromPin } = require("../utils/pinCodeService.js");
 
 
 const addProperty = async (req, res) => {
   try {
-    const firstName = req.firstName;
-
     const {
+      firstName,
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
@@ -35,6 +34,7 @@ const addProperty = async (req, res) => {
       aboutTheProperty,
       comments
     } = req.body;
+
 
     if (
       !(
@@ -82,13 +82,14 @@ const addProperty = async (req, res) => {
         .json({ message: "Numeric fields must be valid numbers" });
     }
 
-    let location;
-    try {
-      location = await getCityFromPin(pin);
-      const { city, locality } = location; // Destructure both city and locality
-    } catch (error) {
-      return res.status(400).json({ message: "Invalid pin code" });
-    }
+    //pin auto
+    // let location;
+    // try {
+    //   location = await getCityFromPin(pin);
+    //   const { city, locality } = location; // Destructure both city and locality
+    // } catch (error) {
+    //   return res.status(400).json({ message: "Invalid pin code" });
+    // }
 
     /**
      * Cloudinary logic to handle multiple files
@@ -97,17 +98,22 @@ const addProperty = async (req, res) => {
       return res.status(400).json({ message: "Image files are required" });
     }
 
+
+
     const imageLocalPaths = req.files.images.map((file) => file.path);
 
     const uploadPromises = imageLocalPaths.map((path) =>
       uploadOnCloudinary(path)
     );
+
+
     const imgResults = await Promise.all(uploadPromises);
 
     const failedUploads = imgResults.filter((result) => !result);
     if (failedUploads.length > 0) {
       return res.status(400).json({ message: "Failed to upload some images" });
     }
+
 
     const imageUrls = imgResults.map((result) => result.url);
 
@@ -116,9 +122,9 @@ const addProperty = async (req, res) => {
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
-      pin: location.pin,
-      city: location.city,
-      locality: location.locality,
+      pin,
+      city,
+      locality,
       address,
       spaceType,
       petsAllowed: formattedPetsAllowed,
@@ -143,6 +149,7 @@ const addProperty = async (req, res) => {
 
     const property = await Property.create(data);
 
+
     if (!property) {
       return res
         .status(500)
@@ -155,6 +162,7 @@ const addProperty = async (req, res) => {
       msg: "Property registered successfully.",
     });
   } catch (error) {
+    console.log("Error is here in catch", error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -215,18 +223,19 @@ const updateProperty = async (req, res) => {
     } = req.body;
     console.log(req.body);
 
-    if (pin) {
-      let location;
-      try {
-        location = await getCityFromPin(pin);
-        const { city, locality } = location;
-        property.city = city;
-        property.locality = locality;
-        property.pin = pin;
-      } catch (error) {
-        return res.status(400).json({ message: "Invalid pin code" });
-      }
-    }
+    // pin auto 
+    // if (pin) {
+    //   let location;
+    //   try {
+    //     location = await getCityFromPin(pin);
+    //     const { city, locality } = location;
+    //     property.city = city;
+    //     property.locality = locality;
+    //     property.pin = pin;
+    //   } catch (error) {
+    //     return res.status(400).json({ message: "Invalid pin code" });
+    //   }
+    // }
 
     // Update the property fields
     property.  firstName =    firstName ?? property.   firstName;

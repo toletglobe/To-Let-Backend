@@ -11,7 +11,7 @@ const {
 } = require("../controllers/propertyController.js");
 const upload = require("../middlewares/multer.js");
 const authenticate = require("../middlewares/authMiddleware.js");
-const { getCityFromPin } = require("../utils/pinCodeService.js");
+// const { getCityFromPin } = require("../utils/pinCodeService.js");
 
 const router = express.Router();
 
@@ -20,31 +20,33 @@ router.route("/add-property").post(
   upload.fields([
     {
       name: "images",
-      maxCount: 5, // max count
+      maxCount: 10, // max count
     },
   ]),
   addProperty
-); //change names and methods according to your endpoints
+);
+
+//change names and methods according to your endpoints
 
 
 // New route for fetching city and locality by PIN code
-router.get("/get-location/:pin", async (req, res) => {
-  const pin = req.params.pin;
+// router.get("/get-location/:pin", async (req, res) => {
+//   const pin = req.params.pin;
 
-  if (!pin) {
-    return res.status(400).json({ message: "PIN code is required" });
-  }
+//   if (!pin) {
+//     return res.status(400).json({ message: "PIN code is required" });
+//   }
 
-  try {
-    const location = await getCityFromPin(pin);
-    return res.status(200).json({
-      city: location.city,
-      locality: location.locality,
-    });
-  } catch (error) {
-    return res.status(400).json({ message: "Invalid PIN code" });
-  }
-});
+//   try {
+//     const location = await getCityFromPin(pin);
+//     return res.status(200).json({
+//       city: location.city,
+//       locality: location.locality,
+//     });
+//   } catch (error) {
+//     return res.status(400).json({ message: "Invalid PIN code" });
+//   }
+// });
 
 //eg.
 

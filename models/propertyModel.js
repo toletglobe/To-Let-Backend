@@ -3,8 +3,7 @@ const Schema = mongoose.Schema;
 
 const PropertySchema = new Schema({
   firstName: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
     required: true,
   },
   lastName: {
@@ -35,7 +34,7 @@ const PropertySchema = new Schema({
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential"],
+    enum: ["Commercial", "Residential","PG"],
     required: true,
   },
   petsAllowed: {
@@ -87,7 +86,7 @@ const PropertySchema = new Schema({
     required: true,
   },
   security: {
-    type: String,
+    type: Number,
     required: true,
   },
   photos: {
@@ -99,12 +98,12 @@ const PropertySchema = new Schema({
     required: true,
   },
   appliances: {
-    type: String,
+    type: [String],
     required: true,
     
   },
   amenities: {
-    type: String,
+    type: [String],
     required: true,
     
   },
