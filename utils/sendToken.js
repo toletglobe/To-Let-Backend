@@ -14,7 +14,7 @@ exports.sendToken = (user, statusCode, res) => {
       success: true,
       user: {
         id: user._id,
-        fistName: user.firstName,
+        firstName: user.firstName,
         email: user.email,
         role: user.role,
       },
