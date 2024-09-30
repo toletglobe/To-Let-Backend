@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
   try {
-    const {token} = req.cookies;
-    console.log(req.cookies);
-    
+    const token = req.headers["token"];
+    console.log(token);
+
     if (!token) {
       return res.status(401).json({ message: "Authorization token missing" });
     }
@@ -13,7 +13,8 @@ const authenticate = (req, res, next) => {
       if (err) {
         return res.status(401).json({ message: "Invalid token" });
       }
-      req.userId = decoded.id;
+
+      req.userId = decoded.user.id;
       next();
     });
   } catch (error) {
