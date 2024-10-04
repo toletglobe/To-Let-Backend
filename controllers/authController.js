@@ -333,10 +333,10 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 });
 
 exports.accountSecurity = asyncHandler(async (req, res, next) => {
-  const { currentpassword, newpassword } = req.body;
-  console.log(currentpassword, newpassword);
+  const { currentPassword, newPassword } = req.body;
+  console.log(currentPassword, newPassword);
 
-  if (!currentpassword || !newpassword) {
+  if (!currentPassword || !newPassword) {
     return next(
       new ApiError(
         400,
@@ -349,11 +349,11 @@ exports.accountSecurity = asyncHandler(async (req, res, next) => {
     return next(new ApiError(400, "User not found."));
   }
   // Compare the password with the stored hash
-  const isMatch = await user.comparePassword(currentpassword);
+  const isMatch = await user.comparePassword(currentPassword);
   if (!isMatch) {
     return next(new ApiError(401, "Please enter the correct old password."));
   }
-  user.password = newpassword;
+  user.password = newPassword;
   await user.save();
   sendToken(user, 201, res);
 });
