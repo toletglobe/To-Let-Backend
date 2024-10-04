@@ -128,13 +128,13 @@ const PropertySchema = new Schema({
 PropertySchema.pre("save", function (next) {
   if (this.isModified("locality") || this.isModified("propertyType") || this.isModified("bhk")) {
     // Generate the slug using locality, propertyType, and bhk
-    this.slug = slugify(`${this.locality} ${this.propertyType} ${this.bhk}BHK`, {
+    this.slug = slugify(`${this.locality} ${this.propertyType} ${this.bhk}BHK ${this._id}`, {
       lower: true, // Lowercase slug
       strict: true, // Remove special characters
     });
   }
   next();
-});
+}); 
 
 const Property = mongoose.model("Property", PropertySchema);
 module.exports = Property;
