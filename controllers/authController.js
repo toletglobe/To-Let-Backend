@@ -93,7 +93,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   </head>
   <body>
     <div class="container">
-      <p>Hello, ${user.username}</p>
+      <p>Hello, ${user.firstName}</p>
       <p>
         Thank you for signing up. Please click the button below to verify your
         account:
@@ -273,7 +273,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   </head>
   <body>
     <div class="container">
-      <p>Hello, ${user.username}</p>
+      <p>Hello, ${user.firstName}</p>
       <p>
         You recently requested to reset your password. Click the button below to
         reset it:
