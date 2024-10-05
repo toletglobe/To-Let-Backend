@@ -495,6 +495,34 @@ const propertyBySlug = asyncHandler(
   }
 );
 
+const getPropertiesByLocation = async (req, res) => {
+  try {
+      const location = req.params.location;
+
+      if (!location) {
+          return res.status(400).json({ message: "Location is required" });
+      }
+
+      const properties = await Property.find({ locality: location });
+
+      if (properties.length === 0) {
+          return res.status(404).json({ message: `No properties found in ${location}` });
+      }
+
+      return res.status(200).json({
+          success: true,
+          data: properties,
+      });
+  } catch (error) {
+      return res.status(500).json({
+          success: false,
+          message: 'Server Error',
+          error: error.message,
+      });
+  }
+};
+
+
 module.exports = {
   propertyBySlug,
   addProperty,
@@ -505,6 +533,7 @@ module.exports = {
   getFilteredProperties,
   addReview,
   deleteReview,
+  getPropertiesByLocation
 };
 
 /**
