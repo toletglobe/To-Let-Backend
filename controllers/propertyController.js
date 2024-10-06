@@ -1,23 +1,49 @@
 const Property = require("../models/propertyModel.js");
 const Review = require("../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
-const { asyncHandler } = require('../utils/asyncHandler.js');
+const { asyncHandler } = require("../utils/asyncHandler.js");
 const { ApiError } = require("../utils/ApiError.js");
+
 const addProperty = async (req, res) => {
   try {
     const userId = req.userId;
 
     const {
-      ownerName,
+      // firstName,
+      // lastName,
+      // // ownerName,
+      // ownersContactNumber,
+      // ownersAlternateContactNumber,
+      // locality,
+      // address,
+      // spaceType,
+      // propertyType,
+      // currentResidenceOfOwner, //correct name
+      // rent,
+      // concession,
+      // petsAllowed,
+      // preference,
+      // bachelors,
+      // type,
+      // bhk,
+      // floor,
+      // nearestLandmark,
+      // typeOfWashroom,
+      // coolingFacility,
+      // carParking,
+      // subscriptionAmount,
+      // locationLink,
+      // pin,
+      // city,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pin,
+      city,
       locality,
       address,
       spaceType,
-      propertyType,
-      currentResidenceOfOwner, //correct name
-      rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -28,37 +54,43 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subscriptionAmount,
-      locationLink,
+      rent,
+      security,
+      images,
+      squareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments,
     } = req.body;
 
-    if (
-      !(
-        ownerName &&
-        ownersContactNumber &&
-        locality &&
-        address &&
-        spaceType &&
-        propertyType &&
-        currentResidenceOfOwner &&
-        rent !== undefined &&
-        concession !== undefined &&
-        petsAllowed !== undefined &&
-        preference &&
-        bachelors &&
-        type &&
-        bhk !== undefined &&
-        floor !== undefined &&
-        nearestLandmark &&
-        typeOfWashroom &&
-        coolingFacility &&
-        carParking !== undefined &&
-        subscriptionAmount !== undefined &&
-        locationLink
-      )
-    ) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
+    // if (
+    //   !(
+    //     ownerName &&
+    //     ownersContactNumber &&
+    //     locality &&
+    //     address &&
+    //     spaceType &&
+    //     propertyType &&
+    //     currentResidenceOfOwner &&
+    //     rent !== undefined &&
+    //     concession !== undefined &&
+    //     petsAllowed !== undefined &&
+    //     preference &&
+    //     bachelors &&
+    //     type &&
+    //     bhk !== undefined &&
+    //     floor !== undefined &&
+    //     nearestLandmark &&
+    //     typeOfWashroom &&
+    //     coolingFacility &&
+    //     carParking !== undefined &&
+    //     subscriptionAmount !== undefined &&
+    //     locationLink
+    //   )
+    // ) {
+    //   return res.status(400).json({ message: "All fields are required" });
+    // }
 
     const formattedConcession = concession === "true";
     const formattedPetsAllowed = petsAllowed === "true";
@@ -343,7 +375,7 @@ const getFilteredProperties = async (req, res) => {
       coolingFacility,
       carParking,
       concession,
-      page = 1,   // Default page 1
+      page = 1, // Default page 1
       limit = 10, // Default limit to 10 results per page
     } = req.query;
 
@@ -430,7 +462,6 @@ const getFilteredProperties = async (req, res) => {
   }
 };
 
-
 const addReview = async (req, res) => {
   try {
     const { propertyId, user, rating, comment, username } = req.body;
@@ -485,43 +516,42 @@ const deleteReview = async (req, res) => {
   }
 };
 
-const propertyBySlug = asyncHandler(
-  async (req, res, next) => {
-    const property = await Property.findOne({ slug: req.params.slug });
-    if (!property) {
-      return next(new ApiError(400, "Property not found"));
-    }
-    res.status(200).json(property);
+const propertyBySlug = asyncHandler(async (req, res, next) => {
+  const property = await Property.findOne({ slug: req.params.slug });
+  if (!property) {
+    return next(new ApiError(400, "Property not found"));
   }
-);
+  res.status(200).json(property);
+});
 
 const getPropertiesByLocation = async (req, res) => {
   try {
-      const location = req.params.location;
+    const location = req.params.location;
 
-      if (!location) {
-          return res.status(400).json({ message: "Location is required" });
-      }
+    if (!location) {
+      return res.status(400).json({ message: "Location is required" });
+    }
 
-      const properties = await Property.find({ locality: location });
+    const properties = await Property.find({ locality: location });
 
-      if (properties.length === 0) {
-          return res.status(404).json({ message: `No properties found in ${location}` });
-      }
+    if (properties.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `No properties found in ${location}` });
+    }
 
-      return res.status(200).json({
-          success: true,
-          data: properties,
-      });
+    return res.status(200).json({
+      success: true,
+      data: properties,
+    });
   } catch (error) {
-      return res.status(500).json({
-          success: false,
-          message: 'Server Error',
-          error: error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
   }
 };
-
 
 module.exports = {
   propertyBySlug,
@@ -533,7 +563,7 @@ module.exports = {
   getFilteredProperties,
   addReview,
   deleteReview,
-  getPropertiesByLocation
+  getPropertiesByLocation,
 };
 
 /**

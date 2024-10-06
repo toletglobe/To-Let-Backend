@@ -8,7 +8,12 @@ const PropertySchema = new Schema({
     ref: "User",
     required: true,
   },
-  ownerName: {
+
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },
@@ -29,7 +34,7 @@ const PropertySchema = new Schema({
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential"],
+    enum: ["Commercial", "Residential", "PG"],
     required: true,
   },
   propertyType: {
@@ -73,7 +78,7 @@ const PropertySchema = new Schema({
     required: true,
   },
   floor: {
-    type: Number,
+    type: String,
     required: true,
   },
   nearestLandmark: {
@@ -93,14 +98,37 @@ const PropertySchema = new Schema({
     type: Boolean,
     required: true,
   },
-  subscriptionAmount: {
+  rent: {
     type: Number,
+    required: true,
   },
-  commentByAnalyst: {
-    type: String,
+  security: {
+    type: Number,
+    required: true,
   },
-  photos: {
+
+  squareFeetArea: {
+    type: Number,
+    required: true,
+  },
+  images: {
     type: [String],
+    required: true,
+  },
+  appliances: {
+    type: [String],
+    required: true,
+  },
+  amenities: {
+    type: [String],
+    required: true,
+  },
+  aboutTheProperty: {
+    type: String,
+    required: true,
+  },
+  comments: {
+    type: String,
     required: true,
   },
   locationLink: {
@@ -126,15 +154,22 @@ const PropertySchema = new Schema({
 
 // Pre-save hook to generate slug including BHK
 PropertySchema.pre("save", function (next) {
-  if (this.isModified("locality") || this.isModified("propertyType") || this.isModified("bhk")) {
+  if (
+    this.isModified("locality") ||
+    this.isModified("propertyType") ||
+    this.isModified("bhk")
+  ) {
     // Generate the slug using locality, propertyType, and bhk
-    this.slug = slugify(`${this.locality} ${this.propertyType} ${this.bhk}BHK ${this._id}`, {
-      lower: true, // Lowercase slug
-      strict: true, // Remove special characters
-    });
+    this.slug = slugify(
+      `${this.locality} ${this.propertyType} ${this.bhk}BHK ${this._id}`,
+      {
+        lower: true, // Lowercase slug
+        strict: true, // Remove special characters
+      }
+    );
   }
   next();
-}); 
+});
 
 const Property = mongoose.model("Property", PropertySchema);
 module.exports = Property;
