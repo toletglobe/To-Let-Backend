@@ -8,7 +8,6 @@ const PropertySchema = new Schema({
     ref: "User",
     required: true,
   },
-
   firstName: {
     type: String,
     required: true,
@@ -98,15 +97,10 @@ const PropertySchema = new Schema({
     type: Boolean,
     required: true,
   },
-  rent: {
-    type: Number,
-    required: true,
-  },
   security: {
     type: Number,
     required: true,
   },
-
   squareFeetArea: {
     type: Number,
     required: true,
@@ -138,7 +132,6 @@ const PropertySchema = new Schema({
   slug: {
     type: String,
     unique: true,
-    required: true,
   },
   createdAt: {
     type: Date,
