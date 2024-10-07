@@ -13,13 +13,12 @@ const addProperty = async (req, res) => {
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pincode,
+      city,
       locality,
       address,
       spaceType,
       propertyType,
-      currentResidenceOfOwner,
-      rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -30,9 +29,10 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
+      rent,
       security,
-      squareFeetArea,
       images,
+      squareFeetArea,
       appliances,
       amenities,
       aboutTheProperty,
@@ -41,7 +41,6 @@ const addProperty = async (req, res) => {
     } = req.body;
 
     // Format the boolean fields correctly
-    const formattedConcession = concession === "true";
     const formattedPetsAllowed = petsAllowed === "true";
     const formattedCarParking = carParking === "true";
 
@@ -49,7 +48,6 @@ const addProperty = async (req, res) => {
     const formattedRent = Number(rent);
     const formattedSecurity = Number(security);
     const formattedBhk = Number(bhk);
-    const formattedFloor = Number(floor);
     const formattedSquareFeetArea = Number(squareFeetArea);
 
     // Validate that numeric fields are valid numbers
@@ -57,7 +55,6 @@ const addProperty = async (req, res) => {
       isNaN(formattedRent) ||
       isNaN(formattedSecurity) ||
       isNaN(formattedBhk) ||
-      isNaN(formattedFloor) ||
       isNaN(formattedSquareFeetArea)
     ) {
       return res
@@ -71,7 +68,9 @@ const addProperty = async (req, res) => {
     }
 
     const imageLocalPaths = req.files.images.map((file) => file.path);
-    const uploadPromises = imageLocalPaths.map((path) => uploadOnCloudinary(path));
+    const uploadPromises = imageLocalPaths.map((path) =>
+      uploadOnCloudinary(path)
+    );
     const imgResults = await Promise.all(uploadPromises);
 
     // Handle any failed uploads
@@ -89,26 +88,26 @@ const addProperty = async (req, res) => {
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pincode,
+      city,
       locality,
       address,
       spaceType,
       propertyType,
-      currentResidenceOfOwner,
-      rent: formattedRent,
-      concession: formattedConcession,
       petsAllowed: formattedPetsAllowed,
       preference,
       bachelors,
       type,
       bhk: formattedBhk,
-      floor: formattedFloor,
+      floor,
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
       carParking: formattedCarParking,
+      rent: formattedRent,
       security: formattedSecurity,
+      images: imageUrls, // Changed photos to images
       squareFeetArea: formattedSquareFeetArea,
-      images: imageUrls,  // Changed photos to images
       appliances,
       amenities,
       aboutTheProperty,
@@ -135,7 +134,6 @@ const addProperty = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
 
 // Logic for updating properties
 const updateProperty = async (req, res) => {

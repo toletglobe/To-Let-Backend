@@ -95,6 +95,14 @@ const UserSchema = new mongoose.Schema({
   securityQuestionAnswer: {
     type: String,
   },
+
+  properties: {
+    type: [mongoose.Schema.Types.ObjectId],
+  },
+
+  profilePicture: {
+    type: String,
+  },
 });
 
 // Pre-save middleware to hash the password before saving if it's modified
