@@ -309,87 +309,92 @@ const getPropertyById = async (req, res) => {
   }
 };
 
+const getPropertyByCity = async (req, res) => {
+  try {
+    // if (!propertyId) {
+    //   return res.status(400).json({ message: "Property ID is required" });
+    // }
+
+    const property = await Property.find({ city: req.params.city });
+
+    // const property = await Property.findById(propertyId).populate("reviews");
+
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    return res.status(200).json(property);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getFilteredProperties = async (req, res) => {
   try {
     const {
-      minPrice,
-      maxPrice,
       bhk,
-      locality,
-      petsAllowed,
-      spaceType,
-      propertyType,
-      currentResidenceOfOwner,
-      preference,
-      bachelors,
-      type,
-      floor,
-      nearestLandmark,
-      typeOfWashroom,
-      coolingFacility,
-      carParking,
-      concession,
-      page = 1, // Default page 1
-      limit = 10, // Default limit to 10 results per page
+      residential,
+      commercial,
+      preferenceHousing,
+      genderPreference,
+      houseType,
+      city,
+      page = 1,
+      limit = 10,
     } = req.query;
 
     const filter = {};
 
-    // Handling price range filter
-    if (minPrice) filter.rent = { ...filter.rent, $gte: Number(minPrice) };
-    if (maxPrice) filter.rent = { ...filter.rent, $lte: Number(maxPrice) };
-
     // Handling BHK filter
     if (bhk) {
-      const bhkNumber = Number(bhk);
-      if (!isNaN(bhkNumber)) filter.bhk = bhkNumber;
+      const bhkValues = bhk
+        .split(",")
+        .map((b) => parseInt(b.replace(/\D/g, "")));
+      filter.bhk = { $in: bhkValues };
     }
 
-    // Handling locality filter (trim and case insensitive)
-    if (locality) filter.locality = locality.trim();
-
-    // Handling petsAllowed filter
-    if (petsAllowed !== undefined) filter.petsAllowed = petsAllowed === "true";
-
-    // Handling spaceType filter
-    if (spaceType) filter.spaceType = spaceType.trim();
-
-    // Handling propertyType filter
-    if (propertyType) filter.propertyType = propertyType.trim();
-
-    // Handling currentResidenceOfOwner filter
-    if (currentResidenceOfOwner)
-      filter.currentResidenceOfOwner = currentResidenceOfOwner.trim();
-
-    // Handling preference filter
-    if (preference) filter.preference = preference.trim();
-
-    // Handling bachelors filter
-    if (bachelors) filter.bachelors = bachelors.trim();
-
-    // Handling type (furnishing) filter
-    if (type) filter.type = type.trim();
-
-    // Handling floor filter
-    if (floor) {
-      const floorNumber = Number(floor);
-      if (!isNaN(floorNumber)) filter.floor = floorNumber;
+    // Handling residential filter
+    if (residential) {
+      const residentialTypes = residential
+        .split(",")
+        .map((t) => t.replace(/^\+ /, ""));
+      filter.propertyType = { $in: residentialTypes };
     }
 
-    // Handling nearestLandmark filter
-    if (nearestLandmark) filter.nearestLandmark = nearestLandmark.trim();
+    // Handling commercial filter
+    if (commercial) {
+      const commercialTypes = commercial
+        .split(",")
+        .map((t) => t.replace(/^\+ /, ""));
+      filter.propertyType = {
+        $in: [...(filter.propertyType?.$in || []), ...commercialTypes],
+      };
+    }
 
-    // Handling typeOfWashroom filter
-    if (typeOfWashroom) filter.typeOfWashroom = typeOfWashroom.trim();
+    // Handling preferenceHousing filter
+    if (preferenceHousing) {
+      if (preferenceHousing === "Any") {
+        // No filter needed for 'Any'
+      } else {
+        filter.preference = preferenceHousing;
+      }
+    }
 
-    // Handling coolingFacility filter
-    if (coolingFacility) filter.coolingFacility = coolingFacility.trim();
+    // Handling genderPreference filter
+    if (genderPreference && preferenceHousing !== "Family") {
+      filter.genderPreference = genderPreference;
+    }
 
-    // Handling carParking filter
-    if (carParking !== undefined) filter.carParking = carParking === "true";
+    // Handling houseType filter
+    if (houseType) {
+      const houseTypes = houseType.split(",");
+      filter.type = { $in: houseTypes };
+    }
 
-    // Handling concession filter
-    if (concession !== undefined) filter.concession = concession === "true";
+    // Handling city filter
+    if (city) {
+      filter.city = city;
+    }
 
     // Pagination logic
     const pageNum = Number(page);
@@ -518,6 +523,7 @@ module.exports = {
   addReview,
   deleteReview,
   getPropertiesByLocation,
+  getPropertyByCity,
 };
 
 /**

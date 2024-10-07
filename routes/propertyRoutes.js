@@ -10,7 +10,8 @@ const {
   addReview,
   deleteReview,
   propertyBySlug,
-  getPropertiesByLocation
+  getPropertiesByLocation,
+  getPropertyByCity,
 } = require("../controllers/propertyController.js");
 
 const upload = require("../middlewares/multer.js");
@@ -49,6 +50,8 @@ router.delete("/reviews/:id", deleteReview);
 
 // Get property by slug
 router.get("/slug/:slug", propertyBySlug);
+
+router.get("/city/:city", getPropertyByCity);
 
 //e.g
 // GET http://localhost:8000/api/v1/property/filter?minPrice=10000&maxPrice=20000
