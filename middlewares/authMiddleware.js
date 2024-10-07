@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
   try {
-    const token = req.headers["token"];
+    const token = req.headers.authorization?.split(" ")[1];
     console.log(token);
 
     if (!token) {
@@ -14,7 +14,7 @@ const authenticate = (req, res, next) => {
         return res.status(401).json({ message: "Invalid token" });
       }
 
-      req.userId = decoded.user.id;
+      req.userId = decoded.id;
       next();
     });
   } catch (error) {

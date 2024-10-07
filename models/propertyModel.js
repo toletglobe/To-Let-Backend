@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const slugify = require("slugify");
 
 const PropertySchema = new Schema({
   userId: {
@@ -7,7 +8,11 @@ const PropertySchema = new Schema({
     ref: "User",
     required: true,
   },
-  ownerName: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
     type: String,
     required: true,
   },
@@ -17,6 +22,15 @@ const PropertySchema = new Schema({
   },
   ownersAlternateContactNumber: {
     type: String,
+  },
+
+  pincode: {
+    type: Number,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
   },
   locality: {
     type: String,
@@ -28,24 +42,12 @@ const PropertySchema = new Schema({
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential"],
+    enum: ["Commercial", "Residential", "PG"],
     required: true,
   },
   propertyType: {
     type: String,
-    enum: ["House", "Flat", "PG", "Office", "Shop"],
-    required: true,
-  },
-  currentResidenceOfOwner: {
-    type: String,
-    enum: ["Same City", "Same Place", "Different City"],
-  },
-  rent: {
-    type: Number,
-    required: true,
-  },
-  concession: {
-    type: Boolean,
+    enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse"],
     required: true,
   },
   petsAllowed: {
@@ -72,7 +74,7 @@ const PropertySchema = new Schema({
     required: true,
   },
   floor: {
-    type: Number,
+    type: String,
     required: true,
   },
   nearestLandmark: {
@@ -92,19 +94,50 @@ const PropertySchema = new Schema({
     type: Boolean,
     required: true,
   },
-  subscriptionAmount: {
+
+  rent: {
     type: Number,
+    required: true,
   },
-  commentByAnalyst: {
+  security: {
+    type: Number,
+    required: true,
+  },
+
+  images: {
+    type: [String],
+    required: true,
+  },
+
+  squareFeetArea: {
+    type: Number,
+    required: true,
+  },
+
+  appliances: {
+    type: [String],
+    required: true,
+  },
+  amenities: {
+    type: [String],
+    required: true,
+  },
+
+  aboutTheProperty: {
     type: String,
+    required: true,
   },
-  photos: {
-    type: [String], // change to an array of strings to store cloudinary links in db
+  comments: {
+    type: String,
     required: true,
   },
   locationLink: {
     type: String,
-    required: true,
+    // required: true,
+  },
+  slug: {
+    type: String,
+    unique: true,
   },
   createdAt: {
     type: Date,
@@ -116,6 +149,25 @@ const PropertySchema = new Schema({
       ref: "Review",
     },
   ],
+});
+
+// Pre-save hook to generate slug including BHK
+PropertySchema.pre("save", function (next) {
+  if (
+    this.isModified("locality") ||
+    this.isModified("propertyType") ||
+    this.isModified("bhk")
+  ) {
+    // Generate the slug using locality, propertyType, and bhk
+    this.slug = slugify(
+      `${this.city} ${this.locality} ${this.propertyType} ${this.bhk}BHK ${this._id}`,
+      {
+        lower: true, // Lowercase slug
+        strict: true, // Remove special characters
+      }
+    );
+  }
+  next();
 });
 
 const Property = mongoose.model("Property", PropertySchema);
