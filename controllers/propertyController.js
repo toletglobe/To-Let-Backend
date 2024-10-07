@@ -9,41 +9,17 @@ const addProperty = async (req, res) => {
     const userId = req.userId;
 
     const {
-      // firstName,
-      // lastName,
-      // // ownerName,
-      // ownersContactNumber,
-      // ownersAlternateContactNumber,
-      // locality,
-      // address,
-      // spaceType,
-      // propertyType,
-      // currentResidenceOfOwner, //correct name
-      // rent,
-      // concession,
-      // petsAllowed,
-      // preference,
-      // bachelors,
-      // type,
-      // bhk,
-      // floor,
-      // nearestLandmark,
-      // typeOfWashroom,
-      // coolingFacility,
-      // carParking,
-      // subscriptionAmount,
-      // locationLink,
-      // pin,
-      // city,
       firstName,
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
-      pin,
-      city,
       locality,
       address,
       spaceType,
+      propertyType,
+      currentResidenceOfOwner,
+      rent,
+      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -54,78 +30,51 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      rent,
       security,
-      images,
       squareFeetArea,
+      images,
       appliances,
       amenities,
       aboutTheProperty,
       comments,
+      locationLink,
     } = req.body;
 
-    // if (
-    //   !(
-    //     ownerName &&
-    //     ownersContactNumber &&
-    //     locality &&
-    //     address &&
-    //     spaceType &&
-    //     propertyType &&
-    //     currentResidenceOfOwner &&
-    //     rent !== undefined &&
-    //     concession !== undefined &&
-    //     petsAllowed !== undefined &&
-    //     preference &&
-    //     bachelors &&
-    //     type &&
-    //     bhk !== undefined &&
-    //     floor !== undefined &&
-    //     nearestLandmark &&
-    //     typeOfWashroom &&
-    //     coolingFacility &&
-    //     carParking !== undefined &&
-    //     subscriptionAmount !== undefined &&
-    //     locationLink
-    //   )
-    // ) {
-    //   return res.status(400).json({ message: "All fields are required" });
-    // }
-
+    // Format the boolean fields correctly
     const formattedConcession = concession === "true";
     const formattedPetsAllowed = petsAllowed === "true";
     const formattedCarParking = carParking === "true";
 
+    // Convert numeric fields from the request
     const formattedRent = Number(rent);
-    const formattedSubscriptionAmount = Number(subscriptionAmount);
+    const formattedSecurity = Number(security);
     const formattedBhk = Number(bhk);
     const formattedFloor = Number(floor);
+    const formattedSquareFeetArea = Number(squareFeetArea);
 
+    // Validate that numeric fields are valid numbers
     if (
       isNaN(formattedRent) ||
-      isNaN(formattedSubscriptionAmount) ||
+      isNaN(formattedSecurity) ||
       isNaN(formattedBhk) ||
-      isNaN(formattedFloor)
+      isNaN(formattedFloor) ||
+      isNaN(formattedSquareFeetArea)
     ) {
       return res
         .status(400)
         .json({ message: "Numeric fields must be valid numbers" });
     }
 
-    /**
-     * Cloudinary logic to handle multiple files
-     */
+    // Cloudinary file upload logic
     if (!req.files || !req.files.images || req.files.images.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
 
     const imageLocalPaths = req.files.images.map((file) => file.path);
-
-    const uploadPromises = imageLocalPaths.map((path) =>
-      uploadOnCloudinary(path)
-    );
+    const uploadPromises = imageLocalPaths.map((path) => uploadOnCloudinary(path));
     const imgResults = await Promise.all(uploadPromises);
 
+    // Handle any failed uploads
     const failedUploads = imgResults.filter((result) => !result);
     if (failedUploads.length > 0) {
       return res.status(400).json({ message: "Failed to upload some images" });
@@ -133,9 +82,11 @@ const addProperty = async (req, res) => {
 
     const imageUrls = imgResults.map((result) => result.url);
 
+    // Create property data object
     const data = {
       userId,
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
       locality,
@@ -155,11 +106,17 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking: formattedCarParking,
-      subscriptionAmount: formattedSubscriptionAmount,
+      security: formattedSecurity,
+      squareFeetArea: formattedSquareFeetArea,
+      images: imageUrls,  // Changed photos to images
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments,
       locationLink,
-      photos: imageUrls,
     };
 
+    // Save property to the database
     const property = await Property.create(data);
 
     if (!property) {
@@ -167,8 +124,8 @@ const addProperty = async (req, res) => {
         .status(500)
         .json({ message: "Something went wrong while creating property" });
     }
-    await property.save();
 
+    await property.save();
     return res.status(201).json({
       statusCode: 201,
       property,
@@ -179,7 +136,6 @@ const addProperty = async (req, res) => {
   }
 };
 
-//logic for update properties
 
 // Logic for updating properties
 const updateProperty = async (req, res) => {

@@ -153,7 +153,6 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
   // Mark the account as verified
   user.isVerified = true;
   await user.save();
-
   res
     .status(200)
     .json({ message: "Account verified successfully! You can now log in." });
