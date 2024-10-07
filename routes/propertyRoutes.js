@@ -1,4 +1,5 @@
 const express = require("express");
+
 const {
   addProperty,
   GetProperty,
@@ -8,8 +9,13 @@ const {
   getFilteredProperties,
   addReview,
   deleteReview,
+  propertyBySlug,
+  getPropertiesByLocation,
+  getPropertyByCity,
 } = require("../controllers/propertyController.js");
+
 const upload = require("../middlewares/multer.js");
+
 const authenticate = require("../middlewares/authMiddleware.js");
 
 const router = express.Router();
@@ -24,8 +30,9 @@ router.route("/add-property").post(
   ]),
   addProperty
 ); //change names and methods according to your endpoints
-
 //eg.
+
+router.route("/location/:location").get(getPropertiesByLocation);
 
 router.route("/filter").get(getFilteredProperties);
 
@@ -40,6 +47,11 @@ router.route("/:id").get(getPropertyById); //change names and methods according 
 router.post("/add-review", addReview);
 
 router.delete("/reviews/:id", deleteReview);
+
+// Get property by slug
+router.get("/slug/:slug", propertyBySlug);
+
+router.get("/city/:city", getPropertyByCity);
 
 //e.g
 // GET http://localhost:8000/api/v1/property/filter?minPrice=10000&maxPrice=20000

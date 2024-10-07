@@ -1,22 +1,24 @@
 const Property = require("../models/propertyModel.js");
 const Review = require("../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
+const { asyncHandler } = require("../utils/asyncHandler.js");
+const { ApiError } = require("../utils/ApiError.js");
 
 const addProperty = async (req, res) => {
   try {
     const userId = req.userId;
 
     const {
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pincode,
+      city,
       locality,
       address,
       spaceType,
       propertyType,
-      currentResidenceOfOwner, //correct name
-      rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -27,72 +29,51 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subscriptionAmount,
+      rent,
+      security,
+      images,
+      squareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments,
       locationLink,
     } = req.body;
 
-    if (
-      !(
-        ownerName &&
-        ownersContactNumber &&
-        locality &&
-        address &&
-        spaceType &&
-        propertyType &&
-        currentResidenceOfOwner &&
-        rent !== undefined &&
-        concession !== undefined &&
-        petsAllowed !== undefined &&
-        preference &&
-        bachelors &&
-        type &&
-        bhk !== undefined &&
-        floor !== undefined &&
-        nearestLandmark &&
-        typeOfWashroom &&
-        coolingFacility &&
-        carParking !== undefined &&
-        subscriptionAmount !== undefined &&
-        locationLink
-      )
-    ) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    const formattedConcession = concession === "true";
+    // Format the boolean fields correctly
     const formattedPetsAllowed = petsAllowed === "true";
     const formattedCarParking = carParking === "true";
 
+    // Convert numeric fields from the request
     const formattedRent = Number(rent);
-    const formattedSubscriptionAmount = Number(subscriptionAmount);
+    const formattedSecurity = Number(security);
     const formattedBhk = Number(bhk);
-    const formattedFloor = Number(floor);
+    const formattedSquareFeetArea = Number(squareFeetArea);
 
+    // Validate that numeric fields are valid numbers
     if (
       isNaN(formattedRent) ||
-      isNaN(formattedSubscriptionAmount) ||
+      isNaN(formattedSecurity) ||
       isNaN(formattedBhk) ||
-      isNaN(formattedFloor)
+      isNaN(formattedSquareFeetArea)
     ) {
       return res
         .status(400)
         .json({ message: "Numeric fields must be valid numbers" });
     }
 
-    /**
-     * Cloudinary logic to handle multiple files
-     */
+    // Cloudinary file upload logic
     if (!req.files || !req.files.images || req.files.images.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
 
     const imageLocalPaths = req.files.images.map((file) => file.path);
-
     const uploadPromises = imageLocalPaths.map((path) =>
       uploadOnCloudinary(path)
     );
     const imgResults = await Promise.all(uploadPromises);
 
+    // Handle any failed uploads
     const failedUploads = imgResults.filter((result) => !result);
     if (failedUploads.length > 0) {
       return res.status(400).json({ message: "Failed to upload some images" });
@@ -100,33 +81,41 @@ const addProperty = async (req, res) => {
 
     const imageUrls = imgResults.map((result) => result.url);
 
+    // Create property data object
     const data = {
       userId,
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
+      pincode,
+      city,
       locality,
       address,
       spaceType,
       propertyType,
-      currentResidenceOfOwner,
-      rent: formattedRent,
-      concession: formattedConcession,
       petsAllowed: formattedPetsAllowed,
       preference,
       bachelors,
       type,
       bhk: formattedBhk,
-      floor: formattedFloor,
+      floor,
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
       carParking: formattedCarParking,
-      subscriptionAmount: formattedSubscriptionAmount,
+      rent: formattedRent,
+      security: formattedSecurity,
+      images: imageUrls, // Changed photos to images
+      squareFeetArea: formattedSquareFeetArea,
+      appliances,
+      amenities,
+      aboutTheProperty,
+      comments,
       locationLink,
-      photos: imageUrls,
     };
 
+    // Save property to the database
     const property = await Property.create(data);
 
     if (!property) {
@@ -135,6 +124,7 @@ const addProperty = async (req, res) => {
         .json({ message: "Something went wrong while creating property" });
     }
 
+    await property.save();
     return res.status(201).json({
       statusCode: 201,
       property,
@@ -144,8 +134,6 @@ const addProperty = async (req, res) => {
     return res.status(500).json({ message: error.message });
   }
 };
-
-//logic for update properties
 
 // Logic for updating properties
 const updateProperty = async (req, res) => {
@@ -321,93 +309,107 @@ const getPropertyById = async (req, res) => {
   }
 };
 
+const getPropertyByCity = async (req, res) => {
+  try {
+    // if (!propertyId) {
+    //   return res.status(400).json({ message: "Property ID is required" });
+    // }
+
+    const property = await Property.find({ city: req.params.city });
+
+    // const property = await Property.findById(propertyId).populate("reviews");
+
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    return res.status(200).json(property);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getFilteredProperties = async (req, res) => {
   try {
     const {
-      minPrice,
-      maxPrice,
       bhk,
-      locality,
-      petsAllowed,
-      spaceType,
-      propertyType,
-      currentResidenceOfOwner,
-      preference,
-      bachelors,
-      type,
-      floor,
-      nearestLandmark,
-      typeOfWashroom,
-      coolingFacility,
-      carParking,
-      concession,
+      residential,
+      commercial,
+      preferenceHousing,
+      genderPreference,
+      houseType,
+      city,
+      page = 1,
+      limit = 10,
     } = req.query;
 
     const filter = {};
 
-    // Handling price range filter
-    if (minPrice) filter.rent = { ...filter.rent, $gte: Number(minPrice) };
-    if (maxPrice) filter.rent = { ...filter.rent, $lte: Number(maxPrice) };
-
     // Handling BHK filter
     if (bhk) {
-      const bhkNumber = Number(bhk);
-      if (!isNaN(bhkNumber)) filter.bhk = bhkNumber;
+      const bhkValues = bhk
+        .split(",")
+        .map((b) => parseInt(b.replace(/\D/g, "")));
+      filter.bhk = { $in: bhkValues };
     }
 
-    // Handling locality filter
-    if (locality) filter.locality = locality;
-
-    // Handling petsAllowed filter
-    if (petsAllowed !== undefined) filter.petsAllowed = petsAllowed === "true";
-
-    // Handling spaceType filter
-    if (spaceType) filter.spaceType = spaceType;
-
-    // Handling propertyType filter
-    if (propertyType) filter.propertyType = propertyType;
-
-    // Handling currentResidenceOfOwner filter
-    if (currentResidenceOfOwner)
-      filter.currentResidenceOfOwner = currentResidenceOfOwner;
-
-    // Handling preference filter
-    if (preference) filter.preference = preference;
-
-    // Handling bachelors filter
-    if (bachelors) filter.bachelors = bachelors;
-
-    // Handling type (furnishing) filter
-    if (type) filter.type = type;
-
-    // Handling floor filter
-    if (floor) {
-      const floorNumber = Number(floor);
-      if (!isNaN(floorNumber)) filter.floor = floorNumber;
+    // Handling residential filter
+    if (residential) {
+      const residentialTypes = residential
+        .split(",")
+        .map((t) => t.replace(/^\+ /, ""));
+      filter.propertyType = { $in: residentialTypes };
     }
 
-    // Handling nearestLandmark filter
-    if (nearestLandmark) filter.nearestLandmark = nearestLandmark;
+    // Handling commercial filter
+    if (commercial) {
+      const commercialTypes = commercial
+        .split(",")
+        .map((t) => t.replace(/^\+ /, ""));
+      filter.propertyType = {
+        $in: [...(filter.propertyType?.$in || []), ...commercialTypes],
+      };
+    }
 
-    // Handling typeOfWashroom filter
-    if (typeOfWashroom) filter.typeOfWashroom = typeOfWashroom;
+    // Handling preferenceHousing filter
+    if (preferenceHousing) {
+      if (preferenceHousing === "Any") {
+        // No filter needed for 'Any'
+      } else {
+        filter.preference = preferenceHousing;
+      }
+    }
 
-    // Handling coolingFacility filter
-    if (coolingFacility) filter.coolingFacility = coolingFacility;
+    // Handling genderPreference filter
+    if (genderPreference && preferenceHousing !== "Family") {
+      filter.genderPreference = genderPreference;
+    }
 
-    // Handling carParking filter
-    if (carParking !== undefined) filter.carParking = carParking === "true";
+    // Handling houseType filter
+    if (houseType) {
+      const houseTypes = houseType.split(",");
+      filter.type = { $in: houseTypes };
+    }
 
-    // Handling concession filter
-    if (concession !== undefined) filter.concession = concession === "true";
+    // Handling city filter
+    if (city) {
+      filter.city = city;
+    }
 
-    // Fetch filtered properties from the database
-    const properties = await Property.find(filter);
+    // Pagination logic
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Fetch filtered properties from the database with pagination
+    const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
     // Send successful response with filtered properties
     res.status(200).json({
       success: true,
       data: properties,
+      page: pageNum,
+      limit: limitNum,
     });
   } catch (error) {
     // Send error response
@@ -473,7 +475,45 @@ const deleteReview = async (req, res) => {
   }
 };
 
+const propertyBySlug = asyncHandler(async (req, res, next) => {
+  const property = await Property.findOne({ slug: req.params.slug });
+  if (!property) {
+    return next(new ApiError(400, "Property not found"));
+  }
+  res.status(200).json(property);
+});
+
+const getPropertiesByLocation = async (req, res) => {
+  try {
+    const location = req.params.location;
+
+    if (!location) {
+      return res.status(400).json({ message: "Location is required" });
+    }
+
+    const properties = await Property.find({ locality: location });
+
+    if (properties.length === 0) {
+      return res
+        .status(404)
+        .json({ message: `No properties found in ${location}` });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: properties,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
+  propertyBySlug,
   addProperty,
   updateProperty,
   deleteProperty,
@@ -482,6 +522,8 @@ module.exports = {
   getFilteredProperties,
   addReview,
   deleteReview,
+  getPropertiesByLocation,
+  getPropertyByCity,
 };
 
 /**
