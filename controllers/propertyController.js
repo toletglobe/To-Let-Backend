@@ -36,31 +36,38 @@ const addProperty = async (req, res) => {
       appliances,
       amenities,
       aboutTheProperty,
-      comments,
       locationLink,
     } = req.body;
 
     // Format the boolean fields correctly
-    const formattedPetsAllowed = petsAllowed === "true";
-    const formattedCarParking = carParking === "true";
+    // const formattedPetsAllowed = petsAllowed === "true";
+    // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
 
     // Convert numeric fields from the request
-    const formattedRent = Number(rent);
-    const formattedSecurity = Number(security);
-    const formattedBhk = Number(bhk);
-    const formattedSquareFeetArea = Number(squareFeetArea);
+    // const formattedRent = Number(rent);
+    // const formattedSecurity = Number(security);
+    // const formattedBhk = Number(bhk);
+    // const formattedSquareFeetArea = Number(squareFeetArea);
 
     // Validate that numeric fields are valid numbers
-    if (
-      isNaN(formattedRent) ||
-      isNaN(formattedSecurity) ||
-      isNaN(formattedBhk) ||
-      isNaN(formattedSquareFeetArea)
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Numeric fields must be valid numbers" });
-    }
+    // if (
+    //   isNaN(formattedRent) ||
+    //   isNaN(formattedSecurity) ||
+    //   isNaN(formattedBhk) ||
+    //   isNaN(formattedSquareFeetArea)
+    // ) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Numeric fields must be valid numbers" });
+    // }
+
+
+    const formattedRent = isNaN(Number(rent)) ? "NA" : Number(rent);
+    const formattedSecurity = isNaN(Number(security)) ? "NA" : Number(security);
+    const formattedBhk = isNaN(Number(bhk)) ? "NA" : Number(bhk);
+    const formattedSquareFeetArea = isNaN(Number(squareFeetArea))
+      ? "NA"
+      : Number(squareFeetArea);
 
     // Cloudinary file upload logic
     if (!req.files || !req.files.images || req.files.images.length === 0) {
@@ -94,7 +101,7 @@ const addProperty = async (req, res) => {
       address,
       spaceType,
       propertyType,
-      petsAllowed: formattedPetsAllowed,
+      petsAllowed,
       preference,
       bachelors,
       type,
@@ -103,7 +110,7 @@ const addProperty = async (req, res) => {
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
-      carParking: formattedCarParking,
+      carParking, 
       rent: formattedRent,
       security: formattedSecurity,
       images: imageUrls, // Changed photos to images
@@ -111,7 +118,6 @@ const addProperty = async (req, res) => {
       appliances,
       amenities,
       aboutTheProperty,
-      comments,
       locationLink,
     };
 

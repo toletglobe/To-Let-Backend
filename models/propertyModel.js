@@ -14,7 +14,6 @@ const PropertySchema = new Schema({
   },
   lastName: {
     type: String,
-    required: true,
   },
   ownersContactNumber: {
     type: String,
@@ -23,7 +22,6 @@ const PropertySchema = new Schema({
   ownersAlternateContactNumber: {
     type: String,
   },
-
   pincode: {
     type: Number,
     required: true,
@@ -42,35 +40,34 @@ const PropertySchema = new Schema({
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential", "PG"],
+    enum: ["Commercial", "Residential", "PG", "NA"],
     required: true,
   },
   propertyType: {
     type: String,
-    enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse"],
+    enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
     required: true,
   },
   petsAllowed: {
-    type: Boolean,
-    required: true,
+    type: String,
   },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any"],
+    enum: ["Bachelors", "Family", "Any", "NA"],
     required: true,
   },
   bachelors: {
     type: String,
-    enum: ["Male", "Female", "Others"],
+    enum: ["Male", "Female", "Others", "NA"],
     required: true,
   },
   type: {
     type: String,
-    enum: ["Non-Furnished", "Semi-Furnished", "Fully-Furnished"],
+    enum: ["Non-Furnished", "Semi-Furnished", "Fully-Furnished", "NA"],
     required: true,
   },
   bhk: {
-    type: Number,
+    type: String,   //due to NA
     required: true,
   },
   floor: {
@@ -82,38 +79,34 @@ const PropertySchema = new Schema({
   },
   typeOfWashroom: {
     type: String,
-    enum: ["Western", "Indian", "Both"],
+    enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
   coolingFacility: {
     type: String,
-    enum: ["AC", "Fan", "Cooler"],
+    enum: ["AC", "Fan", "Cooler", "NA"],
     required: true,
   },
   carParking: {
-    type: Boolean,
+    type: String,
     required: true,
   },
-
   rent: {
-    type: Number,
+    type: String,   //due to NA
     required: true,
   },
   security: {
-    type: Number,
+    type: String,   //due to NA
     required: true,
   },
-
   images: {
     type: [String],
     required: true,
   },
-
   squareFeetArea: {
-    type: Number,
+    type: String,     //due to NA
     required: true,
   },
-
   appliances: {
     type: [String],
     required: true,
@@ -122,18 +115,12 @@ const PropertySchema = new Schema({
     type: [String],
     required: true,
   },
-
   aboutTheProperty: {
-    type: String,
-    required: true,
-  },
-  comments: {
     type: String,
     required: true,
   },
   locationLink: {
     type: String,
-    // required: true,
   },
   slug: {
     type: String,
