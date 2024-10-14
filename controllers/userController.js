@@ -1,5 +1,6 @@
 const { jwtDecode } = require("jwt-decode");
 const User = require("../models/userModel");
+const { uploadOnCloudinary } = require("../utils/cloudinary.js");
 
 exports.getUserInfo = async (req, res) => {
   try {
@@ -7,16 +8,12 @@ exports.getUserInfo = async (req, res) => {
 
     // Check if token exists
     if (!token) {
-      return res.status(401).json("Unauthorised");
+      return res.status(401).json("Unauthorized");
     }
 
     // Try decoding the token
     const decoded = jwtDecode(token);
-    // console.log("Decoded Token:", decoded);
-
-    // Make sure the ID exists
-    const userId = decoded.id; // Using 'id' directly based on your token structure
-    // console.log("User ID:", userId);
+    const userId = decoded.id; // Assuming the token contains 'id'
 
     // Try fetching the user from MongoDB
     const user = await User.findById(userId);
@@ -31,6 +28,7 @@ exports.getUserInfo = async (req, res) => {
       lastName: user.lastName,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      profilePicture: user.profilePicture, // Include profile picture if exists
     };
 
     res.status(200).json(userData);
@@ -41,14 +39,13 @@ exports.getUserInfo = async (req, res) => {
 };
 
 exports.updateUser = async (req, res) => {
-  // console.log("Request Body: ", req.body); // Log the incoming request body
   const { userId, firstName, lastName, email, phoneNumber } = req.body;
 
   try {
     const user = await User.findByIdAndUpdate(
       userId,
       { firstName, lastName, email, phoneNumber },
-      { new: true } // This option returns the updated document
+      { new: true } // Return the updated document
     );
 
     if (!user) {
@@ -62,3 +59,42 @@ exports.updateUser = async (req, res) => {
   }
 };
 
+exports.uploadProfilePicture = async (req, res) => {
+  try {
+    const userId = req.userId; // Retrieved from middleware
+    const imageFile = req.file;
+
+    // Log to verify file reception
+    console.log("Received Image File:", imageFile);
+
+    if (!imageFile) {
+      return res.status(400).json({ message: "No image file provided" });
+    }
+
+    // Upload the image to Cloudinary
+    const uploadResult = await uploadOnCloudinary(imageFile.path);
+
+    if (!uploadResult) {
+      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+    }
+
+    // Update the user with the new profile picture URL
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { profilePicture: uploadResult.url },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Profile picture updated successfully",
+      profilePictureUrl: updatedUser.profilePicture,
+    });
+  } catch (error) {
+    console.error("Error in uploading profile picture:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
