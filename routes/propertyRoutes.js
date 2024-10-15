@@ -26,7 +26,11 @@ router.route("/add-property").post(
   upload.fields([
     {
       name: "images",
-      maxCount: 5, // max count
+      maxCount: 10, // max count
+    },
+    {
+      name: "videos",
+      maxCount: 5   // max count
     },
   ]),
   addProperty

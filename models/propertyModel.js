@@ -85,13 +85,13 @@ const PropertySchema = new Schema({
   typeOfWashroom: {
     type: String,
     enum: ["Western", "Indian", "Both", "NA"],
-    enum: ["Western", "Indian", "Both", "NA"],
+    // enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
   coolingFacility: {
     type: String,
     enum: ["AC", "Fan", "Cooler", "NA"],
-    enum: ["AC", "Fan", "Cooler", "NA"],
+    // enum: ["AC", "Fan", "Cooler", "NA"],
     required: true,
   },
   carParking: {
@@ -132,14 +132,6 @@ const PropertySchema = new Schema({
   },
   locationLink: {
     type: String,
-  },
-  addressVerification: {
-    type: String,
-  },
-  availabilityStatus: {
-    type: String,
-    enum: ["Available", "Rented Out", "NA"],
-    required: true,
   },
   addressVerification: {
     type: String,

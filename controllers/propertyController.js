@@ -16,6 +16,7 @@ const addProperty = async (req, res) => {
       pincode,
       city,
       locality,
+      area,
       address,
       spaceType,
       propertyType,
@@ -32,11 +33,14 @@ const addProperty = async (req, res) => {
       rent,
       security,
       images,
+      videos,  //adding videos
       squareFeetArea,
+      locationLink,
       appliances,
       amenities,
+      addressVerification,
+      availabilityStatus,
       aboutTheProperty,
-      locationLink,
     } = req.body;
 
     // Format the boolean fields correctly
@@ -88,6 +92,27 @@ const addProperty = async (req, res) => {
 
     const imageUrls = imgResults.map((result) => result.url);
 
+     if (!req.files.videos || req.files.videos.length === 0) {
+       return res.status(400).json({ message: "Video files are required" });
+     }
+
+     // Extract local paths for videos
+     const videoLocalPaths = req.files.videos.map((file) => file.path);
+
+     // Upload videos to Cloudinary
+     const uploadVideoPromises = videoLocalPaths.map((path) =>
+       uploadOnCloudinary(path)
+     );
+
+     const videoResults = await Promise.all(uploadVideoPromises);
+
+     const failedVideoUploads = videoResults.filter((result) => !result);
+     if (failedVideoUploads.length > 0) {
+       return res.status(400).json({ message: "Failed to upload some videos" });
+     }
+
+     const videoUrls = videoResults.map((result) => result.url);
+
     // Create property data object
     const data = {
       userId,
@@ -98,6 +123,7 @@ const addProperty = async (req, res) => {
       pincode,
       city,
       locality,
+      area,
       address,
       spaceType,
       propertyType,
@@ -110,15 +136,18 @@ const addProperty = async (req, res) => {
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
-      carParking, 
+      carParking,
       rent: formattedRent,
       security: formattedSecurity,
-      images: imageUrls, // Changed photos to images
+      images: imageUrls, // Changed photos to
+      videos: videoUrls, // adding videos
       squareFeetArea: formattedSquareFeetArea,
+      locationLink,
       appliances,
       amenities,
+      addressVerification,
+      availabilityStatus,
       aboutTheProperty,
-      locationLink,
     };
 
     // Save property to the database
