@@ -34,13 +34,17 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
+  area: {
+    type: String,
+    required: true,
+  },
   address: {
     type: String,
     required: true,
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential", "PG", "NA"],
+    enum: ["Commercial", "Residential", "NA"],
     required: true,
   },
   propertyType: {
@@ -50,10 +54,10 @@ const PropertySchema = new Schema({
   },
   petsAllowed: {
     type: String,
+    enum: ["Yes", "No", "NA"],
   },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any", "NA"],
     enum: ["Bachelors", "Family", "Any", "NA"],
     required: true,
   },
