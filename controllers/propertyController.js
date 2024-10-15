@@ -33,7 +33,7 @@ const addProperty = async (req, res) => {
       rent,
       security,
       images,
-      videos,  //adding videos
+      videos, //adding videos
       squareFeetArea,
       locationLink,
       appliances,
@@ -65,7 +65,6 @@ const addProperty = async (req, res) => {
     //     .json({ message: "Numeric fields must be valid numbers" });
     // }
 
-
     const formattedRent = isNaN(Number(rent)) ? "NA" : Number(rent);
     const formattedSecurity = isNaN(Number(security)) ? "NA" : Number(security);
     const formattedBhk = isNaN(Number(bhk)) ? "NA" : Number(bhk);
@@ -73,7 +72,7 @@ const addProperty = async (req, res) => {
       ? "NA"
       : Number(squareFeetArea);
 
-    // Cloudinary file upload logic
+    // Cloudinary file upload logic for images
     if (!req.files || !req.files.images || req.files.images.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
@@ -92,26 +91,34 @@ const addProperty = async (req, res) => {
 
     const imageUrls = imgResults.map((result) => result.url);
 
-     if (!req.files.videos || req.files.videos.length === 0) {
-       return res.status(400).json({ message: "Video files are required" });
-     }
+    // Cloudinary file upload logic for videos
+    let videoUrls = null;
+    
+    if (!req.files.videos || req.files.videos.length === 0) {
+      // return res.status(400).json({ message: "Video files are required" });
+      console.log("No videos");
+    } else {
+      // Extract local paths for videos
+      const videoLocalPaths = req.files.videos.map((file) => file.path);
 
-     // Extract local paths for videos
-     const videoLocalPaths = req.files.videos.map((file) => file.path);
+      // Upload videos to Cloudinary
+      const uploadVideoPromises = videoLocalPaths.map((path) =>
+        uploadOnCloudinary(path)
+      );
 
-     // Upload videos to Cloudinary
-     const uploadVideoPromises = videoLocalPaths.map((path) =>
-       uploadOnCloudinary(path)
-     );
+      const videoResults = await Promise.all(uploadVideoPromises);
 
-     const videoResults = await Promise.all(uploadVideoPromises);
+      const failedVideoUploads = videoResults.filter((result) => !result);
+      if (failedVideoUploads.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "Failed to upload some videos" });
+      }
 
-     const failedVideoUploads = videoResults.filter((result) => !result);
-     if (failedVideoUploads.length > 0) {
-       return res.status(400).json({ message: "Failed to upload some videos" });
-     }
+      videoUrls = videoResults.map((result) => result.url);
+    }
 
-     const videoUrls = videoResults.map((result) => result.url);
+    
 
     // Create property data object
     const data = {
