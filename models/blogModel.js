@@ -10,9 +10,12 @@ const blogSchema = new Schema({
   category: String,
   views: {
     type: Number,
-    default: 0
+    default: 0,
   },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  likes: {
+    type: Number,
+    default: 0,
+  },
   date: Date,
   intro: String,
   slug: String,
