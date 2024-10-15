@@ -295,6 +295,16 @@ const GetProperty = async (req, res) => {
   }
 };
 
+const getPropertiesByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const properties = await Property.find({ userId: userId });
+    return res.status(200).json(properties);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getPropertyById = async (req, res) => {
   try {
     const propertyId = req.params.id;
@@ -530,6 +540,7 @@ module.exports = {
   deleteReview,
   getPropertiesByLocation,
   getPropertyByCity,
+  getPropertiesByUserId,
 };
 
 /**

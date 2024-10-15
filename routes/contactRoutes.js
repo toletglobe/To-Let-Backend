@@ -1,20 +1,8 @@
 const { Router } = require("express");
 const router = Router();
-const {
-  createEnquiry,
-  getAllEnquiries,
-  getEnquiryById,
-  deleteEnquiry,
-  submitData,
-} = require("../controllers/contactController.js");
 
-// route for enquires
-router.route("/").post(createEnquiry).get(getAllEnquiries);
+const { submitData } = require("../controllers/contactController.js");
 
-// route for enquiry by id
-router.route("/:enquiryId").get(getEnquiryById).delete(deleteEnquiry);
-
-router.route("/submit-data").post( submitData);
-// router.post('/submit-data', submitData);
+router.route("/submit-data").post(submitData);
 
 module.exports = router;
