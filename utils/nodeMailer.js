@@ -3,8 +3,7 @@ const nodemailer = require("nodemailer");
 // Centralized email transporter function
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
+    host: "smtp.zoho.in",
     port: 465,
     secure: true,
     auth: {
