@@ -318,16 +318,34 @@ const deleteProperty = async (req, res) => {
 //logic for get all propertys
 const GetProperty = async (req, res) => {
   try {
-    const data = await Property.find({});
-    //  console.log(` data length ${data.length}`)
+    const { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+
+    // Convert page and limit to numbers
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+
+    const data = await Property.find({})
+      .skip((pageNumber - 1) * limitNumber) // Skip previous pages
+      .limit(limitNumber); // Limit the number of results
+
     if (data.length <= 0) {
       return res.status(404).json({ message: "No Property found" });
     }
-    return res.status(200).json(data);
+
+    const total = await Property.countDocuments(); // Total number of properties
+    const totalPages = Math.ceil(total / limitNumber);
+
+    return res.status(200).json({
+      total,
+      totalPages,
+      currentPage: pageNumber,
+      properties: data,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
 };
+
 
 const getPropertiesByUserId = async (req, res) => {
   try {
