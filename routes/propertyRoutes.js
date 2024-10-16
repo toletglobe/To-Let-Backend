@@ -44,6 +44,7 @@ router.route("/user/:userId").get(getPropertiesByUserId);
 
 router.route("/filter").get(getFilteredProperties);
 
+// http://localhost:8000/api/v1/property?page=2&limit=5
 router.route("/").get(GetProperty); //change names and methods according to your endpoints
 
 router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
