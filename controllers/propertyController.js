@@ -93,7 +93,7 @@ const addProperty = async (req, res) => {
 
     // Cloudinary file upload logic for videos
     let videoUrls = null;
-    
+
     if (!req.files.videos || req.files.videos.length === 0) {
       // return res.status(400).json({ message: "Video files are required" });
       console.log("No videos");
@@ -117,8 +117,6 @@ const addProperty = async (req, res) => {
 
       videoUrls = videoResults.map((result) => result.url);
     }
-
-    
 
     // Create property data object
     const data = {
@@ -577,6 +575,7 @@ module.exports = {
   getPropertiesByLocation,
   getPropertyByCity,
   getPropertiesByUserId,
+
 };
 
 /**

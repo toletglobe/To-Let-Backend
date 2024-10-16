@@ -96,7 +96,7 @@ const PropertySchema = new Schema({
   },
   carParking: {
     type: String,
-    enum: ["Yes", "No", "NA"],
+    enum: ["Yes", "No", "NA", "NA  "],
     required: true,
   },
   rent: {

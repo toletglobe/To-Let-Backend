@@ -13,6 +13,7 @@ const {
   getPropertiesByLocation,
   getPropertyByCity,
   getPropertiesByUserId,
+
 } = require("../controllers/propertyController.js");
 
 const upload = require("../middlewares/multer.js");
@@ -30,7 +31,7 @@ router.route("/add-property").post(
     },
     {
       name: "videos",
-      maxCount: 5   // max count
+      maxCount: 5, // max count
     },
   ]),
   addProperty
