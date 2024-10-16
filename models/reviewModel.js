@@ -1,43 +1,32 @@
 const mongoose = require("mongoose");
 
-const reviewSchema = new mongoose.Schema(
-  {
-    property: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Property",
-      required: true,
-    },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    username: {
-      type: String,
-      required: true,
-    },
-    rating: {
-      type: Number,
-      required: true,
-      min: 1,
-      max: 5,
-    },
-    comment: {
-      type: String,
-      required: true,
-    },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+const reviewSchema = new mongoose.Schema({
+  property: {
+    type: mongoose.Schema.Types.ObjectId,
+    // ref: "Property",
+    required: true,
   },
-  { timestamps: true }
-);
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    // ref: "User",
+    required: true,
+  },
 
-reviewSchema.pre("validate", function (next) {
-  this.slug = this._id.toString();
-  next();
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+  },
+  userRating: {
+    type: Number,
+    required: true,
+  },
+  userComment: {
+    type: String,
+    required: true,
+  },
 });
 
 const Review = mongoose.model("Review", reviewSchema);

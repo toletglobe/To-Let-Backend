@@ -16,6 +16,7 @@ const addProperty = async (req, res) => {
       pincode,
       city,
       locality,
+      area,
       address,
       spaceType,
       propertyType,
@@ -32,37 +33,46 @@ const addProperty = async (req, res) => {
       rent,
       security,
       images,
+      videos, //adding videos
       squareFeetArea,
+      locationLink,
       appliances,
       amenities,
+      addressVerification,
+      availabilityStatus,
       aboutTheProperty,
-      comments,
-      locationLink,
     } = req.body;
 
     // Format the boolean fields correctly
-    const formattedPetsAllowed = petsAllowed === "true";
-    const formattedCarParking = carParking === "true";
+    // const formattedPetsAllowed = petsAllowed === "true";
+    // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
 
     // Convert numeric fields from the request
-    const formattedRent = Number(rent);
-    const formattedSecurity = Number(security);
-    const formattedBhk = Number(bhk);
-    const formattedSquareFeetArea = Number(squareFeetArea);
+    // const formattedRent = Number(rent);
+    // const formattedSecurity = Number(security);
+    // const formattedBhk = Number(bhk);
+    // const formattedSquareFeetArea = Number(squareFeetArea);
 
     // Validate that numeric fields are valid numbers
-    if (
-      isNaN(formattedRent) ||
-      isNaN(formattedSecurity) ||
-      isNaN(formattedBhk) ||
-      isNaN(formattedSquareFeetArea)
-    ) {
-      return res
-        .status(400)
-        .json({ message: "Numeric fields must be valid numbers" });
-    }
+    // if (
+    //   isNaN(formattedRent) ||
+    //   isNaN(formattedSecurity) ||
+    //   isNaN(formattedBhk) ||
+    //   isNaN(formattedSquareFeetArea)
+    // ) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Numeric fields must be valid numbers" });
+    // }
 
-    // Cloudinary file upload logic
+    const formattedRent = isNaN(Number(rent)) ? "NA" : Number(rent);
+    const formattedSecurity = isNaN(Number(security)) ? "NA" : Number(security);
+    const formattedBhk = isNaN(Number(bhk)) ? "NA" : Number(bhk);
+    const formattedSquareFeetArea = isNaN(Number(squareFeetArea))
+      ? "NA"
+      : Number(squareFeetArea);
+
+    // Cloudinary file upload logic for images
     if (!req.files || !req.files.images || req.files.images.length === 0) {
       return res.status(400).json({ message: "Image files are required" });
     }
@@ -81,6 +91,33 @@ const addProperty = async (req, res) => {
 
     const imageUrls = imgResults.map((result) => result.url);
 
+    // Cloudinary file upload logic for videos
+    let videoUrls = null;
+
+    if (!req.files.videos || req.files.videos.length === 0) {
+      // return res.status(400).json({ message: "Video files are required" });
+      console.log("No videos");
+    } else {
+      // Extract local paths for videos
+      const videoLocalPaths = req.files.videos.map((file) => file.path);
+
+      // Upload videos to Cloudinary
+      const uploadVideoPromises = videoLocalPaths.map((path) =>
+        uploadOnCloudinary(path)
+      );
+
+      const videoResults = await Promise.all(uploadVideoPromises);
+
+      const failedVideoUploads = videoResults.filter((result) => !result);
+      if (failedVideoUploads.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "Failed to upload some videos" });
+      }
+
+      videoUrls = videoResults.map((result) => result.url);
+    }
+
     // Create property data object
     const data = {
       userId,
@@ -91,10 +128,11 @@ const addProperty = async (req, res) => {
       pincode,
       city,
       locality,
+      area,
       address,
       spaceType,
       propertyType,
-      petsAllowed: formattedPetsAllowed,
+      petsAllowed,
       preference,
       bachelors,
       type,
@@ -103,16 +141,18 @@ const addProperty = async (req, res) => {
       nearestLandmark,
       typeOfWashroom,
       coolingFacility,
-      carParking: formattedCarParking,
+      carParking,
       rent: formattedRent,
       security: formattedSecurity,
-      images: imageUrls, // Changed photos to images
+      images: imageUrls, // Changed photos to
+      videos: videoUrls, // adding videos
       squareFeetArea: formattedSquareFeetArea,
+      locationLink,
       appliances,
       amenities,
+      addressVerification,
+      availabilityStatus,
       aboutTheProperty,
-      comments,
-      locationLink,
     };
 
     // Save property to the database
@@ -284,6 +324,16 @@ const GetProperty = async (req, res) => {
       return res.status(404).json({ message: "No Property found" });
     }
     return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const getPropertiesByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const properties = await Property.find({ userId: userId });
+    return res.status(200).json(properties);
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -524,6 +574,8 @@ module.exports = {
   deleteReview,
   getPropertiesByLocation,
   getPropertyByCity,
+  getPropertiesByUserId,
+
 };
 
 /**
