@@ -30,6 +30,7 @@ const addProperty = async (req, res) => {
       carParking,
       subscriptionAmount,
       locationLink,
+      status
     } = req.body;
 
     if (
@@ -126,6 +127,7 @@ const addProperty = async (req, res) => {
       subscriptionAmount: formattedSubscriptionAmount,
       locationLink,
       photos: imageUrls,
+      propertyStatus,
     };
 
     const property = await Property.create(data);
@@ -197,6 +199,7 @@ const updateProperty = async (req, res) => {
       subscriptionAmount,
       commentByAnalyst,
       locationLink,
+      propertyStatus
     } = req.body;
     console.log(req.body);
 
@@ -230,6 +233,7 @@ const updateProperty = async (req, res) => {
       subscriptionAmount ?? property.subscriptionAmount;
     property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
     property.locationLink = locationLink ?? property.locationLink;
+    property.propertyStatus = propertyStatus ?? property.propertyStatus;  
 
     // Save the updated property
     const updatedProperty = await property.save();

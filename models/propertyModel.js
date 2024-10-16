@@ -107,6 +107,11 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
+  propertyStatus: {
+    type: String,
+    enum: ['available', 'rented', 'NA'], // Add statuses here
+    default: 'available', // Default status
+  },
   slug: {
     type: String,
     unique: true,
