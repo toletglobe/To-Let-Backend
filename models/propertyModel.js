@@ -14,7 +14,6 @@ const PropertySchema = new Schema({
   },
   lastName: {
     type: String,
-    required: true,
   },
   ownersContactNumber: {
     type: String,
@@ -23,7 +22,6 @@ const PropertySchema = new Schema({
   ownersAlternateContactNumber: {
     type: String,
   },
-
   pincode: {
     type: Number,
     required: true,
@@ -36,41 +34,45 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
+  area: {
+    type: String,
+    required: true,
+  },
   address: {
     type: String,
     required: true,
   },
   spaceType: {
     type: String,
-    enum: ["Commercial", "Residential", "PG"],
+    enum: ["Commercial", "Residential", "NA"],
     required: true,
   },
   propertyType: {
     type: String,
-    enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse"],
+    enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
     required: true,
   },
   petsAllowed: {
-    type: Boolean,
-    required: true,
+    type: String,
+    enum: ["Yes", "No", "NA"],
   },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any"],
+    enum: ["Bachelors", "Family", "Any", "NA"],
     required: true,
   },
   bachelors: {
     type: String,
-    enum: ["Male", "Female", "Others"],
+    enum: ["Girls", "Boys", "Any", "NA"],
     required: true,
   },
   type: {
     type: String,
-    enum: ["Non-Furnished", "Semi-Furnished", "Fully-Furnished"],
+    enum: ["Not Furnished", "Semi Furnished", "Fully Furnished", "NA"],
     required: true,
   },
   bhk: {
-    type: Number,
+    type: String,
     required: true,
   },
   floor: {
@@ -82,38 +84,40 @@ const PropertySchema = new Schema({
   },
   typeOfWashroom: {
     type: String,
-    enum: ["Western", "Indian", "Both"],
+    enum: ["Western", "Indian", "Both", "NA"],
+    // enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
   coolingFacility: {
     type: String,
-    enum: ["AC", "Fan", "Cooler"],
+    enum: ["AC", "Fan", "Cooler", "NA"],
+    // enum: ["AC", "Fan", "Cooler", "NA"],
     required: true,
   },
   carParking: {
-    type: Boolean,
+    type: String,
+    enum: ["Yes", "No", "NA", "NA  "],
     required: true,
   },
-
   rent: {
-    type: Number,
+    type: String,
     required: true,
   },
   security: {
-    type: Number,
+    type: String,
     required: true,
   },
-
   images: {
     type: [String],
     required: true,
   },
-
+  videos: {
+    type: [String],
+  },
   squareFeetArea: {
-    type: Number,
+    type: String,
     required: true,
   },
-
   appliances: {
     type: [String],
     required: true,
@@ -122,18 +126,20 @@ const PropertySchema = new Schema({
     type: [String],
     required: true,
   },
-
   aboutTheProperty: {
-    type: String,
-    required: true,
-  },
-  comments: {
     type: String,
     required: true,
   },
   locationLink: {
     type: String,
-    // required: true,
+  },
+  addressVerification: {
+    type: String,
+  },
+  availabilityStatus: {
+    type: String,
+    enum: ["Available", "Rented Out", "NA"],
+    required: true,
   },
   slug: {
     type: String,

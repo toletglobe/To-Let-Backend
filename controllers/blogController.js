@@ -18,19 +18,14 @@ const createBlog = async (req, res) => {
 };
 
 // Route to update views of a Specific blog
-const updateViews = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const blog = await Blog.findById(id);
-
-  if (!blog) {
-    return next(new ApiError(404, "Blog not found"));
-  }
+const updateViews = async (req, res) => {
+  const { slug } = req.params;
+  const blog = await Blog.findOne({ slug: slug });
   // Increment views by 1
   blog.views += 1;
   await blog.save();
-
   res.status(200).json({ message: "Blog views updated", blog });
-});
+};
 
 // Route to get details of Specific Blog
 const blogDetails = async (req, res) => {

@@ -14,8 +14,8 @@ const router = express.Router();
 
 router.route("/blogs").get(allBlogs);
 
-router.route("/blogs/updateViews/:id").get(updateViews);
-router.route("/blogs/updateLikes/:id").get(authenticate, updateLikes);
+router.route("/updateViews/:slug").get(updateViews);
+router.route("/updateLikes/:id").get(authenticate, updateLikes);
 
 router.route("/blogs/:slug").get(blogDetails);
 

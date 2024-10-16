@@ -5,7 +5,7 @@ const {
   userSignup,
   userSignin,
   verifyAccount,
-  accountSecurity
+  accountSecurity,
 } = require("../controllers/authController");
 const authenticate = require("../middlewares/authMiddleware");
 
@@ -16,6 +16,6 @@ router.post("/login", userSignin);
 router.get("/verify/:id", verifyAccount);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
-router.patch("/change-password",authenticate, accountSecurity);
+router.post("/change-password", authenticate, accountSecurity);
 
 module.exports = router;

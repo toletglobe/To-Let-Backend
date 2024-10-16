@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 dotenv.config();
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
@@ -11,6 +11,7 @@ const propertyRouter = require("./routes/propertyRoutes.js");
 const authRoutes = require("./routes/authRoutes");
 const blogRoutes = require("./routes/blogRoutes");
 const userRoutes = require("./routes/userRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const { errorHandler } = require("./middlewares/errorHandler.js");
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
 
 // error handler middleware
 app.use(errorHandler);
