@@ -1,4 +1,5 @@
 const { jwtDecode } = require("jwt-decode");
+const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
 
@@ -10,16 +11,14 @@ exports.getUserInfo = async (req, res) => {
     if (!token) {
       return res.status(401).json("Unauthorized");
     }
-
-    // Try decoding the token
-    const decoded = jwtDecode(token);
-    const userId = decoded.id; // Assuming the token contains 'id'
+    const { id } = jwt.verify(token, process.env.JWT_SECRET);
 
     // Try fetching the user from MongoDB
-    const user = await User.findById(userId);
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json("User not found");
     }
+    console.log(user);
 
     // Send the user data
     const userData = {
@@ -75,7 +74,9 @@ exports.uploadProfilePicture = async (req, res) => {
     const uploadResult = await uploadOnCloudinary(imageFile.path);
 
     if (!uploadResult) {
-      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+      return res
+        .status(500)
+        .json({ message: "Failed to upload image to Cloudinary" });
     }
 
     // Update the user with the new profile picture URL

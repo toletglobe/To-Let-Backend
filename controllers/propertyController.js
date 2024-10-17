@@ -329,7 +329,7 @@ const GetProperty = async (req, res) => {
       .limit(limitNumber); // Limit the number of results
 
     if (data.length <= 0) {
-      return res.status(404).json({ message: "No Property found" });
+      return res.status(404).json({ message: "No more Property" });
     }
 
     const total = await Property.countDocuments(); // Total number of properties
