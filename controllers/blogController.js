@@ -6,8 +6,29 @@ const { ApiError } = require("../utils/ApiError.js");
 
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
-  const blogs = await Blog.find({});
-  res.json(blogs);
+  try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 blogs per page
+    const skip = (page - 1) * limit;
+
+    const blogs = await Blog.find({}).skip(skip).limit(limit);
+    
+    if (blogs.length <= 0) {
+      return res.status(404).json({ message: "No more blogs" });
+    }
+
+    const totalBlogs = await Blog.countDocuments(); // Get total blog count
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    res.json({
+      data: blogs,
+      currentPage: page,
+      totalPages,
+      totalBlogs,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch blogs" });
+  }
 };
 
 const createBlog = async (req, res) => {
