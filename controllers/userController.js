@@ -22,7 +22,7 @@ exports.getUserInfo = async (req, res) => {
 
     // Send the user data
     const userData = {
-      userId: user._id,
+      id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,

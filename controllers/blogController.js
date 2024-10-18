@@ -7,29 +7,48 @@ const { ApiError } = require("../utils/ApiError.js");
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 blogs per page
+    const { page = 1, limit = 6, sortBy = 'latest' } = req.query;
     const skip = (page - 1) * limit;
 
-    const blogs = await Blog.find({}).skip(skip).limit(limit);
-    
-    if (blogs.length <= 0) {
-      return res.status(404).json({ message: "No more blogs" });
+    let blogs;
+
+    if (sortBy === 'trending') {
+      // Calculate the trending score as the sum of likes and views
+      blogs = await Blog.aggregate([
+        {
+          $addFields: {
+            score: { $add: ['$views', '$likes'] },
+          },
+        },
+        { $sort: { score: -1 } }, // Sort by score in descending order
+        { $skip: skip },
+        { $limit: parseInt(limit) },
+      ]);
+    } else if (sortBy === 'latest') {
+      // Sort by creation date in descending order
+      blogs = await Blog.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+    } else {
+      return res.status(400).json({ error: 'Invalid sortBy option' });
     }
 
-    const totalBlogs = await Blog.countDocuments(); // Get total blog count
+    const totalBlogs = await Blog.countDocuments();
     const totalPages = Math.ceil(totalBlogs / limit);
 
     res.json({
       data: blogs,
-      currentPage: page,
+      currentPage: parseInt(page),
       totalPages,
       totalBlogs,
     });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch blogs" });
+    res.status(500).json({ error: 'Failed to fetch blogs' });
   }
 };
+
+
 
 const createBlog = async (req, res) => {
   const dataWithCloudinaryImgUrl = { ...req.body, image: req.file.path };
