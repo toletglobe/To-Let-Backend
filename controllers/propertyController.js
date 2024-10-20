@@ -382,8 +382,11 @@ const getPropertyByCity = async (req, res) => {
     // if (!propertyId) {
     //   return res.status(400).json({ message: "Property ID is required" });
     // }
+    const { page = 1, limit = 10 } = req.query;
 
-    const property = await Property.find({ city: req.params.city });
+    const pageNumber = parseInt(page);
+    const limitNumber = parseInt(limit);
+    const property = await Property.find({ city: req.params.city }).skip((pageNumber - 1) * limitNumber).limit(limitNumber);
 
     // const property = await Property.findById(propertyId).populate("reviews");
 
@@ -391,7 +394,15 @@ const getPropertyByCity = async (req, res) => {
       return res.status(404).json({ message: "Property not found" });
     }
 
-    return res.status(200).json(property);
+    const total = await Property.find({ city: req.params.city }).countDocuments(); // Total number of properties
+    const totalPages = Math.ceil(total / limitNumber);
+
+    return res.status(200).json({
+      total,
+      totalPages,
+      currentPage: pageNumber,
+      properties: property,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
