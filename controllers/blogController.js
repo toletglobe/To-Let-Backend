@@ -7,31 +7,30 @@ const { ApiError } = require("../utils/ApiError.js");
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
   try {
-    const { page = 1, limit = 6, sortBy = 'latest' } = req.query;
+    const { page = 1, limit = 6, sortBy } = req.query;
     const skip = (page - 1) * limit;
 
     let blogs;
 
-    if (sortBy === 'trending') {
-      // Calculate the trending score as the sum of likes and views
+    if (sortBy === "trending") {
       blogs = await Blog.aggregate([
         {
           $addFields: {
-            score: { $add: ['$views', '$likes'] },
+            likesCount: { $size: "$likes" }, // Count the likes array length
+            score: { $add: [{ $size: "$likes" }, "$views"] }, // Sum of likes count and views
           },
         },
         { $sort: { score: -1 } }, // Sort by score in descending order
-        { $skip: skip },
-        { $limit: parseInt(limit) },
+        { $skip: skip }, // Skip documents for pagination
+        { $limit: parseInt(limit) }, // Limit the number of results
       ]);
-    } else if (sortBy === 'latest') {
-      // Sort by creation date in descending order
+    } else if (sortBy === "latest") {
       blogs = await Blog.find({})
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(parseInt(limit));
+        .sort({ createdAt: -1 }) // Sort by the latest creation date
+        .skip(skip) // Skip for pagination
+        .limit(parseInt(limit)); // Limit results
     } else {
-      return res.status(400).json({ error: 'Invalid sortBy option' });
+      return res.status(400).json({ error: "Invalid sortBy option" });
     }
 
     const totalBlogs = await Blog.countDocuments();
@@ -44,11 +43,10 @@ const allBlogs = async (req, res) => {
       totalBlogs,
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch blogs' });
+    console.error("Error fetching blogs:", error); // Log error for debugging
+    res.status(500).json({ error: "Failed to fetch blogs" });
   }
 };
-
-
 
 const createBlog = async (req, res) => {
   const dataWithCloudinaryImgUrl = { ...req.body, image: req.file.path };
