@@ -7,27 +7,23 @@ exports.getUserInfo = async (req, res) => {
   try {
     const { token } = req.query;
 
-    // Check if token exists
     if (!token) {
       return res.status(401).json("Unauthorized");
     }
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Try fetching the user from MongoDB
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json("User not found");
     }
-    console.log(user);
 
-    // Send the user data
     const userData = {
       id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
       phoneNumber: user.phoneNumber,
-      profilePicture: user.profilePicture, // Include profile picture if exists
+      profilePicture: user.profilePicture,
     };
 
     res.status(200).json(userData);
@@ -44,7 +40,7 @@ exports.updateUser = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       userId,
       { firstName, lastName, email, phoneNumber },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!user) {
@@ -74,9 +70,7 @@ exports.uploadProfilePicture = async (req, res) => {
     const uploadResult = await uploadOnCloudinary(imageFile.path);
 
     if (!uploadResult) {
-      return res
-        .status(500)
-        .json({ message: "Failed to upload image to Cloudinary" });
+      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
     }
 
     // Update the user with the new profile picture URL
