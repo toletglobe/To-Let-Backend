@@ -138,6 +138,7 @@ const PropertySchema = new Schema({
   },
   availabilityStatus: {
     type: String,
+    default: 'Available',
     enum: ["Available", "Rented Out", "NA"],
     required: true,
   },
