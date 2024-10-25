@@ -318,7 +318,7 @@ const deleteProperty = async (req, res) => {
 //logic for get all propertys
 const GetProperty = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query; // Default to page 1, limit 10
+    const { page = 1, limit = 9 } = req.query; // Default to page 1, limit 9
 
     // Convert page and limit to numbers
     const pageNumber = parseInt(page);
@@ -382,7 +382,7 @@ const getPropertyByCity = async (req, res) => {
     // if (!propertyId) {
     //   return res.status(400).json({ message: "Property ID is required" });
     // }
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 9 } = req.query;
 
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
@@ -419,7 +419,7 @@ const getFilteredProperties = async (req, res) => {
       houseType,
       city,
       page = 1,
-      limit = 10,
+      limit = 9,
     } = req.query;
 
     const filter = {};
