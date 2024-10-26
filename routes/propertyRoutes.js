@@ -7,6 +7,7 @@ const {
   deleteProperty,
   getPropertyById,
   getFilteredProperties,
+  getPropertiesByStatus,
   addReview,
   deleteReview,
   propertyBySlug,
@@ -43,6 +44,8 @@ router.route("/location/:location").get(getPropertiesByLocation);
 router.route("/user/:userId").get(getPropertiesByUserId);
 
 router.route("/filter").get(getFilteredProperties);
+
+router.get("/status", getPropertiesByStatus);
 
 // http://localhost:8000/api/v1/property?page=2&limit=5
 router.route("/").get(GetProperty); //change names and methods according to your endpoints

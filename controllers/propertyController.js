@@ -500,6 +500,36 @@ const getFilteredProperties = async (req, res) => {
   }
 };
 
+const getPropertiesByStatus = async (req, res) => {
+  try {
+    const { status = 'Available', page = 1, limit = 9 } = req.query;
+
+    // Define the filter for availabilityStatus
+    const filter = { availabilityStatus: status };
+
+    // Pagination setup
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    // Fetch properties based on availabilityStatus with pagination
+    const properties = await Property.find(filter).skip(skip).limit(limitNum);
+
+    res.status(200).json({
+      success: true,
+      data: properties,
+      page: pageNum,
+      limit: limitNum,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
 const addReview = async (req, res) => {
   try {
     const { propertyId, user, rating, comment, username } = req.body;
@@ -599,6 +629,7 @@ module.exports = {
   GetProperty,
   getPropertyById,
   getFilteredProperties,
+  getPropertiesByStatus,
   addReview,
   deleteReview,
   getPropertiesByLocation,
