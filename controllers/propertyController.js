@@ -7,7 +7,13 @@ const { ApiError } = require("../utils/ApiError.js");
 const addProperty = async (req, res) => {
   try {
     const userId = req.userId;
+    const resolvedPincode = pincode || getPincode(city, locality);
 
+    if (!resolvedPincode) {
+      return res
+        .status(400)
+        .json({ message: "Pincode not found for provided city and locality." });
+    }
     const {
       firstName,
       lastName,
@@ -125,7 +131,7 @@ const addProperty = async (req, res) => {
       lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
-      pincode,
+      pincode: resolvedPincode,
       city,
       locality,
       area,
@@ -225,7 +231,13 @@ const updateProperty = async (req, res) => {
       locationLink,
     } = req.body;
     console.log(req.body);
+    const fetchedPincode = pincode || getPincode(city, locality);
 
+    if (!fetchedPincode) {
+      return res
+        .status(400)
+        .json({ message: "Pincode not found for provided city and locality." });
+    }
     // Update the property fields
     property.ownerName = ownerName ?? property.ownerName;
     property.ownersContactNumber =
