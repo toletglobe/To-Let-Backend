@@ -14,6 +14,7 @@ const {
   getPropertiesByLocation,
   getPropertyByCity,
   getPropertiesByUserId,
+  getPropertyByArea,
 
 } = require("../controllers/propertyController.js");
 
@@ -64,6 +65,8 @@ router.delete("/reviews/:id", deleteReview);
 router.get("/slug/:slug", propertyBySlug);
 
 router.get("/city/:city", getPropertyByCity);
+
+router.get("/city/:city/:locality/:area",getPropertyByArea);  //http://localhost:8000/api/v1/property/city/Lucknow/Gomti Nagar/Vishesh Khand
 
 //e.g
 // GET http://localhost:8000/api/v1/property/filter?minPrice=10000&maxPrice=20000
