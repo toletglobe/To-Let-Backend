@@ -9,26 +9,19 @@ const allBlogs = async (req, res) => {
   try {
     const { page = 1, limit = 6, sortBy } = req.query;
     const skip = (page - 1) * limit;
-
+    console.log(page, limit, sortBy);
     let blogs;
 
     if (sortBy === "trending") {
-      blogs = await Blog.aggregate([
-        {
-          $addFields: {
-            likesCount: { $size: "$likes" }, // Count the likes array length
-            score: { $add: [{ $size: "$likes" }, "$views"] }, // Sum of likes count and views
-          },
-        },
-        { $sort: { score: -1 } }, // Sort by score in descending order
-        { $skip: skip }, // Skip documents for pagination
-        { $limit: parseInt(limit) }, // Limit the number of results
-      ]);
+      blogs = await Blog.find({})
+        .sort({ views: -1, likes: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
     } else if (sortBy === "latest") {
       blogs = await Blog.find({})
-        .sort({ createdAt: -1 }) // Sort by the latest creation date
-        .skip(skip) // Skip for pagination
-        .limit(parseInt(limit)); // Limit results
+        .sort({ createdAt: 1 })
+        .skip(skip)
+        .limit(parseInt(limit));
     } else {
       return res.status(400).json({ error: "Invalid sortBy option" });
     }
