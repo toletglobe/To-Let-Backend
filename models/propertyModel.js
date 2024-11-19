@@ -42,6 +42,10 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
+  houseNo: {
+    type: String,
+    required: true,
+  },
   spaceType: {
     type: String,
     enum: ["Commercial", "Residential", "NA"],
