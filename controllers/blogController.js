@@ -9,7 +9,6 @@ const allBlogs = async (req, res) => {
   try {
     const { page = 1, limit = 6, sortBy } = req.query;
     const skip = (page - 1) * limit;
-    console.log(page, limit, sortBy);
     let blogs;
 
     if (sortBy === "trending") {
