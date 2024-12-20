@@ -6,14 +6,6 @@ const { ApiError } = require("../../utils/ApiError.js");
 
 const addProperty = async (req, res) => {
   try {
-    const userId = req.userId;
-    const resolvedPincode = pincode || getPincode(city, locality);
-
-    if (!resolvedPincode) {
-      return res
-        .status(400)
-        .json({ message: "Pincode not found for provided city and locality." });
-    }
     const {
       firstName,
       lastName,
@@ -48,6 +40,13 @@ const addProperty = async (req, res) => {
       availabilityStatus,
       aboutTheProperty,
     } = req.body;
+    const userId = req.userId;
+    const resolvedPincode = pincode || getPincode(city, locality);
+    if (!resolvedPincode) {
+      return res
+        .status(400)
+        .json({ message: "Pincode not found for provided city and locality." });
+    }
 
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
