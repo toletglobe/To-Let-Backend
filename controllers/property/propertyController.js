@@ -1,4 +1,5 @@
 const Property = require("../../models/propertyModel.js");
+const User=require("../../models/userModel.js")
 const Review = require("../../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
@@ -6,6 +7,8 @@ const { ApiError } = require("../../utils/ApiError.js");
 
 const addProperty = async (req, res) => {
   try {
+
+
     const {
       firstName,
       lastName,
@@ -40,14 +43,15 @@ const addProperty = async (req, res) => {
       availabilityStatus,
       aboutTheProperty,
     } = req.body;
-    const userId = req.userId;
-    const resolvedPincode = pincode || getPincode(city, locality);
-    if (!resolvedPincode) {
-      return res
-        .status(400)
-        .json({ message: "Pincode not found for provided city and locality." });
-    }
 
+ const resolvedPincode = pincode || getPincode(city, locality);
+
+
+ if (!resolvedPincode) {
+   return res
+     .status(400)
+     .json({ message: "Pincode not found for provided city and locality." });
+ }
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
     // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
@@ -184,37 +188,36 @@ const addProperty = async (req, res) => {
 const updateProperty = async (req, res) => {
   try {
     const propertyId = req.params.id;
-
+console.log(propertyId);
     if (!propertyId) {
       return res.status(400).json({ message: "Property ID is required" });
     }
-
     // Find the property by ID
     let property = await Property.findById(propertyId);
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
     }
-
     // Find the user associated with this property
     const user = await User.findById(property.userId);
+
     if (!user) {
       return res
         .status(404)
         .json({ message: "User associated with this property not found" });
     }
-
     // Get the fields from the update form
     const {
-      ownerName,
+      firstName,
+      lastName,
       ownersContactNumber,
       ownersAlternateContactNumber,
       locality,
+      pincode,
       address,
       spaceType,
       propertyType,
-      currentResidenceOfOwner,
+      area,
       rent,
-      concession,
       petsAllowed,
       preference,
       bachelors,
@@ -225,32 +228,32 @@ const updateProperty = async (req, res) => {
       typeOfWashroom,
       coolingFacility,
       carParking,
-      subscriptionAmount,
-      commentByAnalyst,
       locationLink,
     } = req.body;
     console.log(req.body);
-    const fetchedPincode = pincode || getPincode(city, locality);
-
+    const fetchedPincode = pincode;
+    //|| getPincode(city, locality);
     if (!fetchedPincode) {
       return res
         .status(400)
         .json({ message: "Pincode not found for provided city and locality." });
     }
     // Update the property fields
-    property.ownerName = ownerName ?? property.ownerName;
+    property.firstName = firstName ?? property.firstName;
+    property.lastName = lastName ?? property.lastName;
     property.ownersContactNumber =
       ownersContactNumber ?? property.ownersContactNumber;
     property.ownersAlternateContactNumber =
       ownersAlternateContactNumber ?? property.ownersAlternateContactNumber;
     property.locality = locality ?? property.locality;
     property.address = address ?? property.address;
+    property.area = area ?? property.area;
     property.spaceType = spaceType ?? property.spaceType;
     property.propertyType = propertyType ?? property.propertyType;
-    property.currentResidenceOfOwner =
-      currentResidenceOfOwner ?? property.currentResidenceOfOwner;
+    // property.currentResidenceOfOwner =
+    //   currentResidenceOfOwner ?? property.currentResidenceOfOwner;
     property.rent = rent ?? property.rent;
-    property.concession = concession ?? property.concession;
+    // property.concession = concession ?? property.concession;
     property.petsAllowed =
       petsAllowed !== undefined ? petsAllowed : property.petsAllowed;
     property.preference = preference ?? property.preference;
@@ -263,9 +266,9 @@ const updateProperty = async (req, res) => {
     property.coolingFacility = coolingFacility ?? property.coolingFacility;
     property.carParking =
       carParking !== undefined ? carParking : property.carParking;
-    property.subscriptionAmount =
-      subscriptionAmount ?? property.subscriptionAmount;
-    property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
+    //property.subscriptionAmount =
+    //  subscriptionAmount ?? property.subscriptionAmount;
+    //  property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
     property.locationLink = locationLink ?? property.locationLink;
 
     // Save the updated property
@@ -287,7 +290,6 @@ const updateProperty = async (req, res) => {
 const deleteProperty = async (req, res) => {
   try {
     const propertyId = req.params.id;
-
     if (!propertyId) {
       return res.status(400).json({ message: "Property ID is required" });
     }
@@ -308,7 +310,7 @@ const deleteProperty = async (req, res) => {
 
     // Check if the user is authorized to delete this property
     // Assuming user ID is available in req.user from the middleware
-    const userId = req.user._id;
+    const userId = user._id;
     if (property.userId.toString() !== userId.toString()) {
       return res
         .status(403)
