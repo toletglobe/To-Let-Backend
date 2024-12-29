@@ -7,8 +7,8 @@ const { ApiError } = require("../../utils/ApiError.js");
 
 const addProperty = async (req, res) => {
   try {
-    const userId = req.userId;
-   
+
+
     const {
       firstName,
       lastName,
@@ -43,7 +43,9 @@ const addProperty = async (req, res) => {
       availabilityStatus,
       aboutTheProperty,
     } = req.body;
+
  const resolvedPincode = pincode || getPincode(city, locality);
+
 
  if (!resolvedPincode) {
    return res
