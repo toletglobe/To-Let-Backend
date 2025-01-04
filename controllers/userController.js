@@ -70,7 +70,9 @@ exports.uploadProfilePicture = async (req, res) => {
     const uploadResult = await uploadOnCloudinary(imageFile.path);
 
     if (!uploadResult) {
-      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+      return res
+        .status(500)
+        .json({ message: "Failed to upload image to Cloudinary" });
     }
 
     // Update the user with the new profile picture URL

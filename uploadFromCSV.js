@@ -70,7 +70,7 @@ const getPincode = (city, locality) => {
                   })
                   .filter(Boolean) // Remove any empty strings
               : [
-                  "https://res.cloudinary.com/dxhgvsse5/image/upload/v1729047126/no_imgs_img_nlfc5l.jpg",
+                "https://res.cloudinary.com/dxhgvsse5/image/upload/v1733669680/Screenshot_2024-12-08_at_8.24.13_PM_ouxv0z.png",
                 ],
           videos:
             item.videos !== "NA"

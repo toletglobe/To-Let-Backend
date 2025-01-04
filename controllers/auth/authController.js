@@ -146,6 +146,8 @@ exports.userSignin = asyncHandler(async (req, res, next) => {
 
   // Find user by email and select password
   const user = await User.findOne({ email }).select("+password");
+
+  console.log("FOUND USER : ", user);
   if (!user) {
     return next(new ApiError(400, "User not found."));
   }
