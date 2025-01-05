@@ -41,6 +41,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   // Generate account verification URL
   const verificationUrl = `${process.env.BASE_URL}/api/v1/auth/verify/${user._id}`;
 
+  
   // Set up email options for account verification
   const mailOptions = {
     from: process.env.SMTP_USER,
