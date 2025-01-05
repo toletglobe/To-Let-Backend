@@ -3,36 +3,6 @@ const Review = require("../../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
-//logic for get all propertys
-const GetProperty = async (req, res) => {
-  try {
-    const { page = 1, limit = 9 } = req.query; // Default to page 1, limit 9
-
-    // Convert page and limit to numbers
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-
-    const data = await Property.find({})
-      .skip((pageNumber - 1) * limitNumber) // Skip previous pages
-      .limit(limitNumber); // Limit the number of results
-
-    if (data.length <= 0) {
-      return res.status(404).json({ message: "No more Property" });
-    }
-
-    const total = await Property.countDocuments(); // Total number of properties
-    const totalPages = Math.ceil(total / limitNumber);
-
-    return res.status(200).json({
-      total,
-      totalPages,
-      currentPage: pageNumber,
-      properties: data,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
 
 const getPropertiesByUserId = async (req, res) => {
   try {
@@ -64,41 +34,6 @@ const getPropertyById = async (req, res) => {
   }
 };
 
-const getPropertyByCity = async (req, res) => {
-  try {
-    // if (!propertyId) {
-    //   return res.status(400).json({ message: "Property ID is required" });
-    // }
-    const { page = 1, limit = 9 } = req.query;
-
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-    const property = await Property.find({ city: req.params.city })
-      .skip((pageNumber - 1) * limitNumber)
-      .limit(limitNumber);
-
-    // const property = await Property.findById(propertyId).populate("reviews");
-
-    if (!property) {
-      return res.status(404).json({ message: "Property not found" });
-    }
-
-    const total = await Property.find({
-      city: req.params.city,
-    }).countDocuments(); // Total number of properties
-    const totalPages = Math.ceil(total / limitNumber);
-
-    return res.status(200).json({
-      total,
-      totalPages,
-      currentPage: pageNumber,
-      properties: property,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 const getFilteredProperties = async (req, res) => {
   try {
     const {
@@ -109,6 +44,8 @@ const getFilteredProperties = async (req, res) => {
       genderPreference,
       houseType,
       city,
+      locality,
+      area,
       page = 1,
       limit = 9,
     } = req.query;
@@ -121,6 +58,7 @@ const getFilteredProperties = async (req, res) => {
         .split(",")
         .map((b) => parseInt(b.replace(/\D/g, "")));
       filter.bhk = { $in: bhkValues };
+      console.log(filter);
     }
 
     // Handling residential filter
@@ -164,6 +102,13 @@ const getFilteredProperties = async (req, res) => {
     // Handling city filter
     if (city) {
       filter.city = city;
+      if (locality) {
+        filter.locality = locality;
+        if (area) {
+          const areas = area.split(",").map((a) => a.trim());
+          filter.area = { $in: areas };
+        }
+      }
     }
 
     // Pagination logic
@@ -174,12 +119,16 @@ const getFilteredProperties = async (req, res) => {
     // Fetch filtered properties from the database with pagination
     const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
+    const total = await Property.find(filter).countDocuments(); // Total number of properties
+    const totalPages = Math.ceil(total / limitNum);
+
     // Send successful response with filtered properties
     res.status(200).json({
       success: true,
       data: properties,
       page: pageNum,
       limit: limitNum,
+      totalPages: totalPages,
     });
   } catch (error) {
     // Send error response
@@ -228,81 +177,10 @@ const propertyBySlug = asyncHandler(async (req, res, next) => {
   res.status(200).json(property);
 });
 
-const getPropertiesByLocation = async (req, res) => {
-  try {
-    const location = req.params.location;
-
-    if (!location) {
-      return res.status(400).json({ message: "Location is required" });
-    }
-
-    const properties = await Property.find({ locality: location });
-
-    if (properties.length === 0) {
-      return res
-        .status(404)
-        .json({ message: `No properties found in ${location}` });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: properties,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Server Error",
-      error: error.message,
-    });
-  }
-};
-const getPropertyByArea = async (req, res) => {
-  try {
-    // if (!propertyId) {
-    //   return res.status(400).json({ message: "Property ID is required" });
-    // }
-    const { page = 1, limit = 9 } = req.query;
-    console.log(req.params);
-    const pageNumber = parseInt(page);
-    const limitNumber = parseInt(limit);
-    const property = await Property.find({
-      locality: req.params.locality,
-      city: req.params.city,
-      area: req.params.area,
-    })
-      .skip((pageNumber - 1) * limitNumber)
-      .limit(limitNumber);
-
-    // const property = await Property.findById(propertyId).populate("reviews");
-
-    if (!property) {
-      return res.status(404).json({ message: "Property not found" });
-    }
-
-    const total = await Property.find({
-      area: req.params.area,
-    }).countDocuments(); // Total number of properties
-    const totalPages = Math.ceil(total / limitNumber);
-
-    return res.status(200).json({
-      total,
-      totalPages,
-      currentPage: pageNumber,
-      properties: property,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
-
 module.exports = {
   propertyBySlug,
-  GetProperty,
   getPropertyById,
   getFilteredProperties,
   getPropertiesByStatus,
-  getPropertiesByLocation,
-  getPropertyByCity,
   getPropertiesByUserId,
-  getPropertyByArea,
 };

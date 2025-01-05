@@ -38,7 +38,7 @@ router.route("/add-property").post(
 ); //change names and methods according to your endpoints
 //eg.
 
-router.route("/location/:location").get(getPropertiesByLocation);
+// router.route("/location/:location").get(getPropertiesByLocation);
 
 router.route("/user/:userId").get(getPropertiesByUserId);
 
@@ -47,7 +47,7 @@ router.route("/filter").get(getFilteredProperties);
 router.get("/status", getPropertiesByStatus);
 
 // http://localhost:8000/api/v1/property?page=2&limit=5
-router.route("/").get(GetProperty); //change names and methods according to your endpoints
+// router.route("/").get(GetProperty); //change names and methods according to your endpoints
 
 router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
 
@@ -62,9 +62,9 @@ router.delete("/reviews/:id", deleteReview);
 // Get property by slug
 router.get("/slug/:slug", propertyBySlug);
 
-router.get("/city/:city", getPropertyByCity);
+// router.get("/city/:city", getPropertyByCity);
 
-router.get("/city/:city/:locality/:area", getPropertyByArea); //http://localhost:8000/api/v1/property/city/Lucknow/Gomti Nagar/Vishesh Khand
+// router.get("/city/:city/:locality/:area", getPropertyByArea); //http://localhost:8000/api/v1/property/city/Lucknow/Gomti Nagar/Vishesh Khand
 
 //e.g
 // GET http://localhost:8000/api/v1/property/filter?minPrice=10000&maxPrice=20000
