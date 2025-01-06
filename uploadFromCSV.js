@@ -4,7 +4,7 @@ const Property = require("./models/propertyModel"); // Assuming the Property mod
 const dotenv = require("dotenv");
 
 dotenv.config();
-
+let pincodeData = [];
 const connectDB = async () => {
   try {
     const connectionInstance = await mongoose.connect(process.env.MONGODB_URI);
@@ -15,6 +15,10 @@ const connectDB = async () => {
     console.error("MongoDB connection failed:", error);
     process.exit(1);
   }
+};
+const loadPincodeData = async () => {
+  pincodeData = await csvtojson().fromFile("pincode_data.csv");
+  console.log("Pincode data loaded successfully");
 };
 
 // Call the connectDB function before processing the CSV
@@ -30,7 +34,12 @@ const convertToJson = async () => {
   const jsonArray = await csvtojson().fromFile("properties.csv");
   return jsonArray;
 };
-
+const getPincode = (city, locality) => {
+  const result = pincodeData.find(
+    (entry) => entry.city === city && entry.locality === locality
+  );
+  return result ? result.pincode : null;
+};
 (async () => {
   try {
     const jsonArray = await convertToJson();
@@ -61,7 +70,7 @@ const convertToJson = async () => {
                   })
                   .filter(Boolean) // Remove any empty strings
               : [
-                  "https://res.cloudinary.com/dxhgvsse5/image/upload/v1729047126/no_imgs_img_nlfc5l.jpg",
+                "https://res.cloudinary.com/dxhgvsse5/image/upload/v1733669680/Screenshot_2024-12-08_at_8.24.13_PM_ouxv0z.png",
                 ],
           videos:
             item.videos !== "NA"

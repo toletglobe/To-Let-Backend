@@ -6,8 +6,38 @@ const { ApiError } = require("../utils/ApiError.js");
 
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
-  const blogs = await Blog.find({});
-  res.json(blogs);
+  try {
+    const { page = 1, limit = 6, sortBy } = req.query;
+    const skip = (page - 1) * limit;
+    let blogs;
+
+    if (sortBy === "trending") {
+      blogs = await Blog.find({})
+        .sort({ views: -1, likes: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+    } else if (sortBy === "latest") {
+      blogs = await Blog.find({})
+        .sort({ createdAt: 1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+    } else {
+      return res.status(400).json({ error: "Invalid sortBy option" });
+    }
+
+    const totalBlogs = await Blog.countDocuments();
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    res.json({
+      data: blogs,
+      currentPage: parseInt(page),
+      totalPages,
+      totalBlogs,
+    });
+  } catch (error) {
+    console.error("Error fetching blogs:", error); // Log error for debugging
+    res.status(500).json({ error: "Failed to fetch blogs" });
+  }
 };
 
 const createBlog = async (req, res) => {

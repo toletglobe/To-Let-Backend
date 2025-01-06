@@ -12,10 +12,12 @@ const blogSchema = new Schema({
     type: Number,
     default: 0,
   },
-  likes: {
-    type: Number,
-    default: 0,
-  },
+  likes: [
+    {
+      type: Number,
+      default: 0,
+    },
+  ],
   date: Date,
   intro: String,
   slug: String,
