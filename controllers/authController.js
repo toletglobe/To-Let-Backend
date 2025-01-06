@@ -114,7 +114,6 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 </body>
 
 </html>
-
         `,
   };
 
@@ -236,9 +235,7 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
 </body>
 
 </html>
-
-    
-            `
+ `
 });
 
 // User Signin
