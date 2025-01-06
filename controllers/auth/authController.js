@@ -34,6 +34,8 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     role,
     userType,
     firstSchool: answer,
+    profilePicture:
+      "https://res.cloudinary.com/dxhgvsse5/image/upload/v1736144347/3541871_sl0sxi.png",
   });
 
   await user.save();
@@ -41,7 +43,6 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   // Generate account verification URL
   const verificationUrl = `${process.env.BASE_URL}/api/v1/auth/verify/${user._id}`;
 
-  
   // Set up email options for account verification
   const mailOptions = {
     from: process.env.SMTP_USER,
