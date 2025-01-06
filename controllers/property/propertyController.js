@@ -1,5 +1,5 @@
 const Property = require("../../models/propertyModel.js");
-const User=require("../../models/userModel.js")
+const User = require("../../models/userModel.js");
 const Review = require("../../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
@@ -7,9 +7,8 @@ const { ApiError } = require("../../utils/ApiError.js");
 
 const addProperty = async (req, res) => {
   try {
-
-
     const {
+      userId,
       firstName,
       lastName,
       ownersContactNumber,
@@ -44,14 +43,13 @@ const addProperty = async (req, res) => {
       aboutTheProperty,
     } = req.body;
 
- const resolvedPincode = pincode || getPincode(city, locality);
+    const resolvedPincode = pincode || getPincode(city, locality);
 
-
- if (!resolvedPincode) {
-   return res
-     .status(400)
-     .json({ message: "Pincode not found for provided city and locality." });
- }
+    if (!resolvedPincode) {
+      return res
+        .status(400)
+        .json({ message: "Pincode not found for provided city and locality." });
+    }
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
     // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
@@ -188,7 +186,7 @@ const addProperty = async (req, res) => {
 const updateProperty = async (req, res) => {
   try {
     const propertyId = req.params.id;
-console.log(propertyId);
+    console.log(propertyId);
     if (!propertyId) {
       return res.status(400).json({ message: "Property ID is required" });
     }
