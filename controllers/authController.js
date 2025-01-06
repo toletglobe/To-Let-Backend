@@ -38,6 +38,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     to: user.email,
     subject: "Verify Your Account",
     html: `
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -116,6 +117,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 
         `,
   };
+
 
 
   try {
