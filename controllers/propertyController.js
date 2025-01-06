@@ -7,6 +7,7 @@ const { ApiError } = require("../utils/ApiError.js");
 const addProperty = async (req, res) => {
   try {
     const userId = req.userId;
+    const User = require("../../models/userModel.js")
 
     const {
       firstName,
