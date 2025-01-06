@@ -6,7 +6,7 @@ const {
   userSignin,
   verifyAccount,
   accountSecurity,
-} = require("../controllers/authController");
+} = require("../controllers/auth/index");
 const authenticate = require("../middlewares/authMiddleware");
 
 const router = express.Router();

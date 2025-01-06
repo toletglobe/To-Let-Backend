@@ -17,8 +17,8 @@ const submitData = (req, res) => {
     });
 
     const mailOptions = {
-      from: "hello@toletglobe.in",
-      to: "hello@toletglobe.in", // Recipient email address
+      from: process.env.SMTP_USER,
+      to: process.env.SMTP_USER,
       subject: `Enquiry from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\n Phone:${phone}\nTopic: ${topic}\nMessage: ${msg}\n `,
     };

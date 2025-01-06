@@ -3,8 +3,7 @@ const nodemailer = require("nodemailer");
 // Centralized email transporter function
 const createTransporter = () => {
   return nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
+    host: "smtp.zoho.in",
     port: 465,
     secure: true,
     auth: {
@@ -17,5 +16,14 @@ const createTransporter = () => {
 // Send Email Utility
 exports.sendEmail = async (mailOptions) => {
   const transporter = createTransporter();
-  return transporter.sendMail(mailOptions);
+  console.log(mailOptions);
+  return transporter.sendMail(mailOptions,(error, info) => {
+    if (error) {
+      console.log(error);
+      res.status(400).send("Something went wrong.");
+    } else {
+      console.log("Email sent: " + info.response);
+      res.status(200).send("Form submitted successfully!");
+    }
+  });
 };

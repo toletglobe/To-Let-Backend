@@ -96,7 +96,7 @@ const PropertySchema = new Schema({
   },
   carParking: {
     type: String,
-    enum: ["Yes", "No", "NA", "NA  "],
+    // enum: ["Yes", "No", "NA","NA "],
     required: true,
   },
   rent: {
@@ -138,6 +138,7 @@ const PropertySchema = new Schema({
   },
   availabilityStatus: {
     type: String,
+    default: 'Available',
     enum: ["Available", "Rented Out", "NA"],
     required: true,
   },

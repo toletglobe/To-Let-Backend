@@ -18,6 +18,7 @@ exports.sendToken = (user, statusCode, res) => {
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        profilePicture: user.profilePicture,
       },
       token,
     });

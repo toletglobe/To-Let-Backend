@@ -12,6 +12,7 @@ const upload = require("../middlewares/multer.js");
 
 const router = express.Router();
 
+// ?page=2&limit=5
 router.route("/blogs").get(allBlogs);
 
 router.route("/updateViews/:slug").get(updateViews);
