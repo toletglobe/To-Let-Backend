@@ -7,7 +7,7 @@ async function markPropertyAsRented() {
   try {
     // Fetch and log all properties for debugging
     const properties = await Property.find({});
-    console.log('All properties in the database:', properties);
+    //console.log('All properties in the database:', properties);
 
     // Your original query to update properties
     const propertiesToUpdate = await Property.find({
@@ -15,7 +15,7 @@ async function markPropertyAsRented() {
       availabilityStatus: 'Available',
     });
 
-    console.log('Properties to update:', propertiesToUpdate);
+    //console.log('Properties to update:', propertiesToUpdate);
 
     if (propertiesToUpdate.length > 0) {
       // Perform update
@@ -23,7 +23,7 @@ async function markPropertyAsRented() {
         { rentDueDate: { $lte: now }, availabilityStatus: 'Available' },
         { availabilityStatus: 'Rented Out' }
       );
-      console.log(`Marked ${updateResult.modifiedCount} properties as rented.`);
+      //console.log(`Marked ${updateResult.modifiedCount} properties as rented.`);
     } else {
       console.log('No properties found to update.');
     }

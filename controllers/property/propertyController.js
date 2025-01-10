@@ -228,7 +228,7 @@ const updateProperty = async (req, res) => {
       carParking,
       locationLink,
     } = req.body;
-    console.log(req.body);
+    //console.log(req.body);
     const fetchedPincode = pincode;
     //|| getPincode(city, locality);
     if (!fetchedPincode) {
@@ -272,7 +272,7 @@ const updateProperty = async (req, res) => {
     // Save the updated property
     const updatedProperty = await property.save();
 
-    console.log(updatedProperty);
+   // console.log(updatedProperty);
 
     return res.status(200).json({
       statusCode: 200,
