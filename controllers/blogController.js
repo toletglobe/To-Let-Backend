@@ -64,21 +64,22 @@ const blogDetails = async (req, res) => {
   res.json(blog);
 };
 
-const updateLikes = asyncHandler(async (req, res, next) => {
-  const blog = await Blog.findById(req.params.id);
+const updateLikes = async (req, res, next) => {
+  console.log(req.params);
+  const blog = await Blog.findOne({slug:req.params.id});
   const userId = req.userId;
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-
+console.log(blog)
   const isLiked = blog.likes.includes(userId);
 
   let updatedBlog;
 
   if (isLiked) {
     // If the user has already liked the blog, unlike it
-    updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
+    updatedBlog = await Blog.findOneAndUpdate(
+      {slug: req.params.id},
       { $pull: { likes: userId } },
       { new: true }
     );
@@ -89,8 +90,8 @@ const updateLikes = asyncHandler(async (req, res, next) => {
     });
   } else {
     // If the user hasn't liked the blog, like it
-    updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
+    updatedBlog = await Blog.findOneAndUpdate(
+     {slug:  req.params.id},
       { $push: { likes: userId } },
       { new: true }
     );
@@ -100,7 +101,7 @@ const updateLikes = asyncHandler(async (req, res, next) => {
       message: "Blog liked successfully.",
     });
   }
-});
+};
 
 // Serve static files from the uploads folder
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));
