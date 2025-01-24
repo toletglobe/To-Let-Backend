@@ -57,7 +57,12 @@ const getFilteredProperties = async (req, res) => {
       const bhkValues = bhk
         .split(",")
         .map((b) => parseInt(b.replace(/\D/g, "")));
-      filter.bhk = { $in: bhkValues };
+    console.log(bhkValues)
+      if (bhkValues[0]===5) {
+        filter.bhk = { $gte: 5 };
+      } else {
+          filter.bhk = { $in: bhkValues };
+      }
       console.log(filter);
     }
 
@@ -90,7 +95,17 @@ const getFilteredProperties = async (req, res) => {
 
     // Handling genderPreference filter
     if (genderPreference && preferenceHousing !== "Family") {
-      filter.genderPreference = genderPreference;
+      if (genderPreference === "Others") {
+        filter.bachelors = {
+          $in: ["Boys", "Girls"],
+        };
+      } else {
+        filter.bachelors = {
+          $in: Array.isArray(genderPreference)
+            ? genderPreference
+            : [genderPreference],
+        };
+      }
     }
 
     // Handling houseType filter
