@@ -6,8 +6,38 @@ const { ApiError } = require("../utils/ApiError.js");
 
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
-  const blogs = await Blog.find({});
-  res.json(blogs);
+  try {
+    const { page = 1, limit = 6, sortBy } = req.query;
+    const skip = (page - 1) * limit;
+    let blogs;
+
+    if (sortBy === "trending") {
+      blogs = await Blog.find({})
+        .sort({ views: -1, likes: -1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+    } else if (sortBy === "latest") {
+      blogs = await Blog.find({})
+        .sort({ createdAt: 1 })
+        .skip(skip)
+        .limit(parseInt(limit));
+    } else {
+      return res.status(400).json({ error: "Invalid sortBy option" });
+    }
+
+    const totalBlogs = await Blog.countDocuments();
+    const totalPages = Math.ceil(totalBlogs / limit);
+
+    res.json({
+      data: blogs,
+      currentPage: parseInt(page),
+      totalPages,
+      totalBlogs,
+    });
+  } catch (error) {
+    console.error("Error fetching blogs:", error); // Log error for debugging
+    res.status(500).json({ error: "Failed to fetch blogs" });
+  }
 };
 
 const createBlog = async (req, res) => {
@@ -34,21 +64,22 @@ const blogDetails = async (req, res) => {
   res.json(blog);
 };
 
-const updateLikes = asyncHandler(async (req, res, next) => {
-  const blog = await Blog.findById(req.params.id);
+const updateLikes = async (req, res, next) => {
+  console.log(req.params);
+  const blog = await Blog.findOne({slug:req.params.id});
   const userId = req.userId;
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-
+console.log(blog)
   const isLiked = blog.likes.includes(userId);
 
   let updatedBlog;
 
   if (isLiked) {
     // If the user has already liked the blog, unlike it
-    updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
+    updatedBlog = await Blog.findOneAndUpdate(
+      {slug: req.params.id},
       { $pull: { likes: userId } },
       { new: true }
     );
@@ -59,8 +90,8 @@ const updateLikes = asyncHandler(async (req, res, next) => {
     });
   } else {
     // If the user hasn't liked the blog, like it
-    updatedBlog = await Blog.findByIdAndUpdate(
-      req.params.id,
+    updatedBlog = await Blog.findOneAndUpdate(
+     {slug:  req.params.id},
       { $push: { likes: userId } },
       { new: true }
     );
@@ -70,7 +101,7 @@ const updateLikes = asyncHandler(async (req, res, next) => {
       message: "Blog liked successfully.",
     });
   }
-});
+};
 
 // Serve static files from the uploads folder
 // app.use("/uploads", express.static(path.join(__dirname, "uploads")));

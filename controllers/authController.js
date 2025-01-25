@@ -38,82 +38,86 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     to: user.email,
     subject: "Verify Your Account",
     html: `
-           <!DOCTYPE html>
+
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Account Verification</title>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        margin: 0;
-        padding: 0;
-      }
-      .container {
-        width: 100%;
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #ffffff;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-      p {
-        margin-top: 5px;
-        font-size: 16px;
-        color: #666666;
-      }
-      .button {
-        display: inline-block;
-        padding: 12px 20px;
-        font-size: 16px;
-        color: #ffffff;
-        background-color: #28a745;
-        text-decoration: none;
-        border-radius: 5px;
-        margin-top: 20px;
-        margin-bottom: 15px;
-        text-align: center;
-        cursor: pointer;
-      }
-      .footer {
-        text-align: left;
-        margin-top: 20px;
-        font-size: 12px;
-        color: #999999;
-      }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+            color: #2c3e50;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .content {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #3498db;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="container">
-      <p>Hello, ${user.firstName}</p>
-      <p>
-        Thank you for signing up. Please click the button below to verify your
-        account:
-      </p>
-      <a href="${verificationUrl}" class="button">Verify Account</a>
-      <p>
-        If the button above does not work, you can also verify your account by
-        clicking the following link:
-      </p>
-      <p><a href="${verificationUrl}">${verificationUrl}</a></p>
-      <p>Thank you,</p>
-      <p>To-Let Globe</p>
-      <div class="footer">
-        <p>If you did not request this email, please ignore it.</p>
-      </div>
+        <div class="content">
+            <h1>Hello, ${user.firstName}</h1>
+            <p>Thank you for signing up. Please click the button below to verify your account:</p>
+            <a href="${verificationLink}" class="button">Verify Account</a>
+            <p>If the button above does not work, you can also verify your account by clicking the following link:</p>
+            <p><a href="${verificationLink}">${verificationLink}</a></p>
+            <p>Thank you,<br>To-Let Globe</p>
+        </div>
+        <div class="footer">
+            <p>If you did not request this email, please ignore it.</p>
+        </div>
     </div>
-  </body>
+</body>
+
 </html>
         `,
   };
+
+
 
   try {
     await sendEmail(mailOptions);
@@ -155,7 +159,83 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
   await user.save();
   res
     .status(200)
-    .json({ message: "Account verified successfully! You can now log in." });
+  html: `
+  <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #2c3e50;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 500px;
+            max-width: 100%;
+            padding: 20px;
+            color: #ecf0f1;
+        }
+
+        .content {
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .content p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .content a {
+            display: inline-block;
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer p {
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="content">
+            Your account is already verified.
+        </div>
+        <div class="footer">
+            <p>Thank you for Registration , to Continue please Login.</p>
+        </div>
+    </div>
+</body>
+
+</html>
+ `
 });
 
 // User Signin

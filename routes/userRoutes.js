@@ -1,7 +1,7 @@
-// userRoute.js
-
 const express = require("express");
 const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const authenticate = require("../middlewares/authMiddleware");
 
 const {
@@ -12,9 +12,15 @@ const {
 
 const router = express.Router();
 
+// Ensure the uploads directory exists
+const uploadDirectory = path.join(__dirname, "../uploads");
+if (!fs.existsSync(uploadDirectory)) {
+  fs.mkdirSync(uploadDirectory, { recursive: true });
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Temporary storage
+    cb(null, uploadDirectory); // Use the uploads directory
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
@@ -22,7 +28,6 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  // Accept only image files
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {

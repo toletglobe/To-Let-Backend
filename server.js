@@ -13,6 +13,9 @@ const blogRoutes = require("./routes/blogRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const { errorHandler } = require("./middlewares/errorHandler.js");
+const cron = require('node-cron');
+const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
+const emailSender=require('./utils/sendEmail.js');
 
 const app = express();
 
@@ -28,7 +31,7 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false }, // Set to true in production with HTTPS
+    cookie: { secure: true }, // Set to true in production with HTTPS
   })
 );
 
@@ -56,6 +59,18 @@ app.use("/api/v1/reviews", reviewRoutes);
 
 // error handler middleware
 app.use(errorHandler);
+
+cron.schedule('* * * * *', async () => {
+  console.log('Checking for properties to mark as rented...');
+  try {
+    await markPropertyAsRented();
+    console.log('Property statuses updated successfully.');
+  } catch (error) {
+    console.error('Error updating property statuses:', error);
+  }
+});
+// email sender
+app.use(emailSender);
 
 // *******Dont touch below **********
 connectDB()
