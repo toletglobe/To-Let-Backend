@@ -183,10 +183,13 @@ const addProperty = async (req, res) => {
 };
 
 // Logic for updating properties
+// Logic for updating properties
 const updateProperty = async (req, res) => {
   try {
     const propertyId = req.params.id;
-    console.log(propertyId);
+
+    console.log("req.body", req.body);
+
     if (!propertyId) {
       return res.status(400).json({ message: "Property ID is required" });
     }
@@ -227,16 +230,18 @@ const updateProperty = async (req, res) => {
       coolingFacility,
       carParking,
       locationLink,
+      aboutTheProperty,
     } = req.body;
-    //console.log(req.body);
-    const fetchedPincode = pincode;
-    //|| getPincode(city, locality);
-    if (!fetchedPincode) {
+    // console.log(req.body);
+
+    // Update the property fields
+    property.pincode = pincode ?? property.pincode;
+    if (!pincode || typeof pincode !== "string" || pincode.trim() === "") {
       return res
         .status(400)
-        .json({ message: "Pincode not found for provided city and locality." });
+        .json({ message: "Pincode is required and must be valid." });
     }
-    // Update the property fields
+
     property.firstName = firstName ?? property.firstName;
     property.lastName = lastName ?? property.lastName;
     property.ownersContactNumber =
@@ -268,11 +273,12 @@ const updateProperty = async (req, res) => {
     //  subscriptionAmount ?? property.subscriptionAmount;
     //  property.commentByAnalyst = commentByAnalyst ?? property.commentByAnalyst;
     property.locationLink = locationLink ?? property.locationLink;
+    property.aboutTheProperty = aboutTheProperty ?? property.aboutTheProperty;
 
     // Save the updated property
     const updatedProperty = await property.save();
 
-   // console.log(updatedProperty);
+    console.log(updatedProperty);
 
     return res.status(200).json({
       statusCode: 200,
@@ -280,9 +286,10 @@ const updateProperty = async (req, res) => {
       message: "Property updated successfully.",
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error });
   }
 };
+
 
 //logic for delete property
 const deleteProperty = async (req, res) => {
