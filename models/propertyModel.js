@@ -156,6 +156,10 @@ const PropertySchema = new Schema({
       ref: "Review",
     },
   ],
+  nearbyLocations :{
+    type:[String],
+    default:[],
+  },
 });
 
 // Pre-save hook to generate slug including BHK
