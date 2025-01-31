@@ -1,9 +1,11 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { asyncHandler } = require("../utils/asyncHandler");
-const { sendEmail } = require("../utils/nodeMailer");
+// const { sendEmail } = require("../utils/nodeMailer");
 const { sendToken } = require("../utils/sendToken");
 const { ApiError } = require("../utils/ApiError");
+const nodemailer = require("nodemailer");
+
 
 // User SignUp
 exports.userSignup = asyncHandler(async (req, res, next) => {
@@ -31,6 +33,16 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 
   // Generate account verification URL
   const verificationUrl = `${process.env.BASE_URL}/api/v1/auth/verify/${user._id}`;
+
+  const transporter = nodemailer.createTransport({
+    host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
+    port: 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    secure: true,
+  });
 
   // Set up email options for account verification
   const mailOptions = {
@@ -117,22 +129,36 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
         `,
   };
 
+try{
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+      res.status(400).send("Something went wrong.");
+    } else {
+      console.log("Email sent: " + info.response);
+      res.status(200).send("Form submitted successfully!");
+    }
+  });
+} catch (err) {
+  console.error(err.message);
+  res.status(500).json("Internal server error");
+}
 
 
-  try {
-    await sendEmail(mailOptions);
-    res.status(200).json({
-      message:
-        "Registration successful! Check your email for account verification.",
-    });
-  } catch (error) {
-    return next(
-      new ApiError(
-        500,
-        "An error occurred while sending the verification email. Please try again later."
-      )
-    );
-  }
+  // try {
+  //   await sendEmail(mailOptions);
+  //   res.status(200).json({
+  //     message:
+  //       "Registration successful! Check your email for account verification.",
+  //   });
+  // } catch (error) {
+  //   return next(
+  //     new ApiError(
+  //       500,
+  //       "An error occurred while sending the verification email. Please try again later."
+  //     )
+  //   );
+  // }
 });
 
 // Account Verification

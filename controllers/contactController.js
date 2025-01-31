@@ -7,7 +7,7 @@ const submitData = (req, res) => {
     const { name, email, phone, msg, topic } = req.body;
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.zoho.in",
+      host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
       port: 465,
       auth: {
         user: process.env.SMTP_USER,

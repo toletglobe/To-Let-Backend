@@ -39,10 +39,11 @@ const getFAQs = async (req, res) => {
 
     const topFAQ = rankedFAQs[0];
 
+
     if (topFAQ.relevance === 0) {
-      return res.status(404).json({
-        message:
-          "I'm sorry, I could not find an answer. Would you like to speack with support ?",
+      return res.status(200).json({
+        answer:
+          "I'm sorry, I could not find an answer. Would you like to speak with support ?",
       });
     }
     return res.status(200).json(topFAQ);

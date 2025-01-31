@@ -5,7 +5,7 @@ const router = express.Router(); // Create a router
 // Create Nodemailer transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: "smtp.zoho.in",
+    host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
     port: 465,
     secure: true, // Use SSL
     auth: {
