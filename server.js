@@ -61,7 +61,7 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use(errorHandler);
 
 cron.schedule('* * * * *', async () => {
-  console.log('Checking for properties to mark as rented...');
+ // console.log('Checking for properties to mark as rented...');
   try {
     await markPropertyAsRented();
     console.log('Property statuses updated successfully.');

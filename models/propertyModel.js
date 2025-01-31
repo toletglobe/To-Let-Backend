@@ -79,6 +79,11 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
+  favorites: 
+    {
+      type: [String],
+      default: 0,
+    },
   nearestLandmark: {
     type: String,
   },

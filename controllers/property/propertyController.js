@@ -272,7 +272,7 @@ const updateProperty = async (req, res) => {
     // Save the updated property
     const updatedProperty = await property.save();
 
-   // console.log(updatedProperty);
+    // console.log(updatedProperty);
 
     return res.status(200).json({
       statusCode: 200,
@@ -327,8 +327,96 @@ const deleteProperty = async (req, res) => {
   }
 };
 
+const updateFavorites = async (req, res) => {
+  console.log(req.userId);
+  console.log('hi fav')
+  const property = await Property.findOne({ slug: req.params.slug });
+  const userId = req.userId;
+  if (!property) {
+    
+    return res.status(404).json({ success: false, message: "property not found" });
+  }
+  
+console.log(!property.favorites)
+console.log(property.favorites)
+  if (!property.favorites) {
+    console.log('no favroite array')
+    property = await Property.findOneAndUpdate( 
+      { slug: req.params.id },
+      { $set: { favorites: [userId] } },
+      { new: true });
+console.log(property.favorites)
+      const isFavorite = property.favorites.includes(userId);
+
+      let updatedProperty;
+  
+      if (isFavorite) {
+        // If the user has already liked the property, unfavorite it
+        updatedProperty = await Property.findOneAndUpdate(
+          { slug: req.params.id },
+          { $pull: { favorites: userId } },
+          { new: true }
+        );
+        res.status(200).json({
+          success: true,
+          updatedProperty,
+          message: "Property unfavorites successfully.",
+        });
+      } else {
+        // If the user hasn't Favorite the property, favorite it
+
+        property.favorites.push(userId);
+        updatedProperty = await Property.save();
+        res.status(200).json({
+          success: true,
+          updatedProperty,
+          message: "property favorite successfully.",
+        });
+      }
+   } else { 
+    console.log('fav is present');
+    const isFavorite = property.favorites.includes(userId);
+
+    let updatedProperty;
+console.log(isFavorite)
+    if (isFavorite) {
+      console.log(383)
+      console.log(property)
+
+      // If the user has already liked the property, unfavorite it
+     property.favorites= property.favorites.filter(id => id !== userId);
+      console.log(388)
+
+      
+
+
+
+
+
+      updatedProperty = await property.save();
+      res.status(200).json({
+        success: true,
+        updatedProperty,
+        message: "Property unfavorites successfully.",
+      });
+    } else {
+      // If the user hasn't Favorite the property, favorite it
+      property.favorites.push(userId);
+      updatedProperty = await property.save();
+
+      console.log(updatedProperty)
+      res.status(200).json({
+        success: true,
+        updatedProperty,
+        message: "property favorite successfully.",
+      });
+    }
+  }
+};
+
 module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
+  updateFavorites
 };

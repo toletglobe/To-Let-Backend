@@ -2,7 +2,7 @@ const Property = require('../models/propertyModel'); // Make sure Property model
 
 async function markPropertyAsRented() {
   const now = new Date();
-  console.log(`Checking properties where rentDueDate <= ${now} and status is 'available'`);
+  //console.log(`Checking properties where rentDueDate <= ${now} and status is 'available'`);
 
   try {
     // Fetch and log all properties for debugging

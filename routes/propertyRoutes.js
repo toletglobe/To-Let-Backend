@@ -12,6 +12,7 @@ const {
   getPropertyByCity,
   getPropertiesByUserId,
   getPropertyByArea,
+  updateFavorites,
 } = require("../controllers/property/index.js");
 
 const upload = require("../middlewares/multer.js");
@@ -76,4 +77,5 @@ router.route("/").delete(addProperty); //change names and methods according to y
 
 */
 
+router.route("/updateFavorites/:slug").get(authenticate, updateFavorites);
 module.exports = router;
