@@ -16,6 +16,7 @@ const { errorHandler } = require("./middlewares/errorHandler.js");
 const cron = require('node-cron');
 const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
 const emailSender=require('./utils/sendEmail.js');
+const faqRoutes = require("./routes/FAQroutes.js");
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/faq", faqRoutes);
 
 // error handler middleware
 app.use(errorHandler);
