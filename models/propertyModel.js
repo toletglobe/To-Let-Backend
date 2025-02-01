@@ -138,7 +138,7 @@ const PropertySchema = new Schema({
   },
   availabilityStatus: {
     type: String,
-    default: 'Available',
+    default: "Available",
     enum: ["Available", "Rented Out", "NA"],
     required: true,
   },
@@ -156,6 +156,14 @@ const PropertySchema = new Schema({
       ref: "Review",
     },
   ],
+  nearbyLocations: {
+    type: [String],
+    default: [],
+  },
+  favourites: {
+    type: [String],
+    default: 0,
+  },
 });
 
 // Pre-save hook to generate slug including BHK

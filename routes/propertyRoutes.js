@@ -7,8 +7,6 @@ const {
   getPropertyById,
   getFilteredProperties,
   getPropertiesByStatus,
-  addReview,
-  deleteReview,
   propertyBySlug,
   getPropertiesByLocation,
   getPropertyByCity,
@@ -55,9 +53,9 @@ router.route("/:id").delete(deleteProperty); //change names and methods accordin
 
 router.route("/:id").get(getPropertyById); //change names and methods according to your endpoints
 
-router.post("/add-review", addReview);
+// router.post("/add-review", addReview);
 
-router.delete("/reviews/:id", deleteReview);
+// router.delete("/reviews/:id", deleteReview);
 
 // Get property by slug
 router.get("/slug/:slug", propertyBySlug);

@@ -21,7 +21,7 @@ const loadPincodeData = async () => {
   console.log("Pincode data loaded successfully");
 };
 
-// Call the connectDB function before processing the CSV
+
 connectDB()
   .then(() => {
     console.log("Ready to process CSV and upload to MongoDB");
@@ -31,7 +31,7 @@ connectDB()
   });
 
 const convertToJson = async () => {
-  const jsonArray = await csvtojson().fromFile("properties.csv");
+  const jsonArray = await csvtojson().fromFile("./properties.csv");
   return jsonArray;
 };
 const getPincode = (city, locality) => {
@@ -175,3 +175,5 @@ const getPincode = (city, locality) => {
     }
   }
 })();
+
+

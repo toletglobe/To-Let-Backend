@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 // Centralized email transporter function
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: "smtp.zoho.in",
+    host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
     port: 465,
     secure: true,
     auth: {

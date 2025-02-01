@@ -3,6 +3,8 @@ const Review = require("../../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
+const path = require("path");
+const fs = require("fs");
 
 const getPropertiesByUserId = async (req, res) => {
   try {
@@ -57,8 +59,11 @@ const getFilteredProperties = async (req, res) => {
       const bhkValues = bhk
         .split(",")
         .map((b) => parseInt(b.replace(/\D/g, "")));
-      filter.bhk = { $in: bhkValues };
-      console.log(filter);
+      if (bhkValues[0] === 5) {
+        filter.bhk = { $gte: 5 };
+      } else {
+        filter.bhk = { $in: bhkValues };
+      }
     }
 
     // Handling residential filter
@@ -90,7 +95,17 @@ const getFilteredProperties = async (req, res) => {
 
     // Handling genderPreference filter
     if (genderPreference && preferenceHousing !== "Family") {
-      filter.genderPreference = genderPreference;
+      if (genderPreference === "Others") {
+        filter.bachelors = {
+          $in: ["Boys", "Girls"],
+        };
+      } else {
+        filter.bachelors = {
+          $in: Array.isArray(genderPreference)
+            ? genderPreference
+            : [genderPreference],
+        };
+      }
     }
 
     // Handling houseType filter
@@ -98,16 +113,60 @@ const getFilteredProperties = async (req, res) => {
       const houseTypes = houseType.split(",");
       filter.type = { $in: houseTypes };
     }
+//getting data from data.json to validate the areas
+    let validAreas = null;
+    const dataFilePath = path.join(__dirname, "..", "..", "data.json");
+    const rawData = fs.readFileSync(dataFilePath, "utf-8");
+    const areaData = JSON.parse(rawData);
+    const toTitleCase = (text) => {
+      return text
+        .toLowerCase()
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    };
+
+    // Utility function to fetch valid areas and their neighboring areas
+    const getValidAreas = (areas, areaData) => {
+      const formattedAreas = areas.map(toTitleCase);
+
+      return areaData
+        .filter((entry) => {
+          const entryArea = toTitleCase(entry.Area.trim());
+          const entryAREA = toTitleCase(entry.AREA.trim());
+
+          return (
+            formattedAreas.includes(entryArea) ||
+            formattedAreas.includes(entryAREA)
+          );
+        })
+        .flatMap((entry) => {
+          const mainArea = toTitleCase(entry.Area.trim());
+
+          // Extract neighboring areas safely
+          const neighbors = entry["Neighbouring Areas"]
+            ? entry["Neighbouring Areas"]
+                .split(",")
+                .map((a) => toTitleCase(a.trim()))
+            : [];
+
+          return [mainArea, ...neighbors];
+        });
+    };
 
     // Handling city filter
     if (city) {
       filter.city = city;
       if (locality) {
-        filter.locality = locality;
-        if (area) {
-          const areas = area.split(",").map((a) => a.trim());
-          filter.area = { $in: areas };
+        filter.locality = toTitleCase(locality);
+      }
+      if (area) {
+        const areas = area.split(",").map((a) => a.trim());
+        validAreas = getValidAreas(areas, areaData);
+        if (validAreas.length > 0) {
+          filter.area = { $in: validAreas };
         }
+        console.log(validAreas);
       }
     }
 
