@@ -43,7 +43,7 @@ const getFAQs = async (req, res) => {
     if (topFAQ.relevance === 0) {
       return res.status(200).json({
         answer:
-          "I'm sorry, I could not find an answer. Would you like to speak with support ?",
+          "Sorry, I didn’t understand that.",
       });
     }
     return res.status(200).json(topFAQ);
