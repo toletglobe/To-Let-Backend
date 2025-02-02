@@ -20,6 +20,8 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     answer,
   } = req.body;
 
+  console.log("HEYYY");
+
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -37,11 +39,10 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     userType,
     firstSchool: answer,
     profilePicture:
-      "https://res.cloudinary.com/dxhgvsse5/image/upload/v1736144347/3541871_sl0sxi.png",
+      "https://res.cloudinary.com/dxhgvsse5/image/upload/v1736144347/3541871_sl0sxi.png"
   });
 
   await user.save();
-
 
   // Generate account verification URL
   const verificationUrl = `${process.env.BASE_URL}/api/v1/auth/verify/${user._id}`;
@@ -63,89 +64,89 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   const mailOptions = {
     from: process.env.SMTP_USER,
     // to: user.email,
-    to:"02amol@gmail.com",
+    to: "02amol@gmail.com",
     subject: "Verify Your Account",
     text: `Please click the following link to verify your account: ${verificationUrl}`,
-//     html: `
-//            <!DOCTYPE html>
-// <html lang="en">
-//   <head>
-//     <meta charset="UTF-8" />
-//     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-//     <title>Account Verification</title>
-//     <style>
-//       * {
-//         margin: 0;
-//         padding: 0;
-//         box-sizing: border-box;
-//       }
-//       body {
-//         font-family: Arial, sans-serif;
-//         background-color: #f4f4f4;
-//         margin: 0;
-//         padding: 0;
-//       }
-//       .container {
-//         width: 100%;
-//         max-width: 600px;
-//         margin: 0 auto;
-//         background-color: #ffffff;
-//         padding: 20px;
-//         border-radius: 8px;
-//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//       }
-//       p {
-//         margin-top: 5px;
-//         font-size: 16px;
-//         color: #666666;
-//       }
-//       .button {
-//         display: inline-block;
-//         padding: 12px 20px;
-//         font-size: 16px;
-//         color: #ffffff;
-//         background-color: #28a745;
-//         text-decoration: none;
-//         border-radius: 5px;
-//         margin-top: 20px;
-//         margin-bottom: 15px;
-//         text-align: center;
-//         cursor: pointer;
-//       }
-//       .footer {
-//         text-align: left;
-//         margin-top: 20px;
-//         font-size: 12px;
-//         color: #999999;
-//       }
-//     </style>
-//   </head>
-//   <body>
-//     <div class="container">
-//       <p>Hello, ${user.firstName}</p>
-//       <p>
-//         Thank you for signing up. Please click the button below to verify your
-//         account:
-//       </p>
-//       <a href="${verificationUrl}" class="button">Verify Account</a>
-//       <p>
-//         If the button above does not work, you can also verify your account by
-//         clicking the following link:
-//       </p>
-//       <p><a href="${verificationUrl}">${verificationUrl}</a></p>
-//       <p>Thank you,</p>
-//       <p>To-Let Globe</p>
-//       <div class="footer">
-//         <p>If you did not request this email, please ignore it.</p>
-//       </div>
-//     </div>
-//   </body>
-// </html>
-//         `,
+    //     html: `
+    //            <!DOCTYPE html>
+    // <html lang="en">
+    //   <head>
+    //     <meta charset="UTF-8" />
+    //     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    //     <title>Account Verification</title>
+    //     <style>
+    //       * {
+    //         margin: 0;
+    //         padding: 0;
+    //         box-sizing: border-box;
+    //       }
+    //       body {
+    //         font-family: Arial, sans-serif;
+    //         background-color: #f4f4f4;
+    //         margin: 0;
+    //         padding: 0;
+    //       }
+    //       .container {
+    //         width: 100%;
+    //         max-width: 600px;
+    //         margin: 0 auto;
+    //         background-color: #ffffff;
+    //         padding: 20px;
+    //         border-radius: 8px;
+    //         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    //       }
+    //       p {
+    //         margin-top: 5px;
+    //         font-size: 16px;
+    //         color: #666666;
+    //       }
+    //       .button {
+    //         display: inline-block;
+    //         padding: 12px 20px;
+    //         font-size: 16px;
+    //         color: #ffffff;
+    //         background-color: #28a745;
+    //         text-decoration: none;
+    //         border-radius: 5px;
+    //         margin-top: 20px;
+    //         margin-bottom: 15px;
+    //         text-align: center;
+    //         cursor: pointer;
+    //       }
+    //       .footer {
+    //         text-align: left;
+    //         margin-top: 20px;
+    //         font-size: 12px;
+    //         color: #999999;
+    //       }
+    //     </style>
+    //   </head>
+    //   <body>
+    //     <div class="container">
+    //       <p>Hello, ${user.firstName}</p>
+    //       <p>
+    //         Thank you for signing up. Please click the button below to verify your
+    //         account:
+    //       </p>
+    //       <a href="${verificationUrl}" class="button">Verify Account</a>
+    //       <p>
+    //         If the button above does not work, you can also verify your account by
+    //         clicking the following link:
+    //       </p>
+    //       <p><a href="${verificationUrl}">${verificationUrl}</a></p>
+    //       <p>Thank you,</p>
+    //       <p>To-Let Globe</p>
+    //       <div class="footer">
+    //         <p>If you did not request this email, please ignore it.</p>
+    //       </div>
+    //     </div>
+    //   </body>
+    // </html>
+    //         `,
   };
   console.log("mailOptions : ", mailOptions);
 
-  try{
+  try {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.log(error);

@@ -87,6 +87,7 @@ const UserSchema = new mongoose.Schema({
   resetPasswordToken: {
     type: String,
   }, // Token for password reset
+
   resetPasswordExpire: {
     type: Date,
   }, // Token expiration time
@@ -96,8 +97,14 @@ const UserSchema = new mongoose.Schema({
     type: String,
   },
 
-  properties: {
+  // properties: {
+  //   type: [mongoose.Schema.Types.ObjectId],
+  // },
+
+  favourites: {
     type: [mongoose.Schema.Types.ObjectId],
+    ref: "Property",
+    default: [],
   },
 
   profilePicture: {
