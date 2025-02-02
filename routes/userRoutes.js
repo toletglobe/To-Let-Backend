@@ -8,6 +8,9 @@ const {
   uploadProfilePicture,
   updateUser,
   getUserInfo,
+  addToFavourites,
+  getFavourites,
+  removeFromFavourites,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -60,6 +63,10 @@ router.post(
 router.get("/testToken", authenticate, (req, res) => {
   res.status(200).json({ message: "Token is valid", userId: req.userId });
 });
+
+router.post("/addToFavourites", authenticate, addToFavourites);
+router.post("/getFavourites", authenticate, getFavourites);
+router.post("/removeFromFavourites", authenticate, removeFromFavourites);
 
 // Other routes
 router.get("/info", authenticate, getUserInfo);

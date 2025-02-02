@@ -160,10 +160,6 @@ const PropertySchema = new Schema({
     type: [String],
     default: [],
   },
-  favourites: {
-    type: [String],
-    default: 0,
-  },
 });
 
 // Pre-save hook to generate slug including BHK

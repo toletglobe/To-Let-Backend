@@ -6,10 +6,20 @@ const { sendToken } = require("../utils/sendToken");
 const { ApiError } = require("../utils/ApiError");
 const nodemailer = require("nodemailer");
 
-
 // User SignUp
 exports.userSignup = asyncHandler(async (req, res, next) => {
-  const { firstName, lastName, email, password, phone, role, userType, answer } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    phone,
+    role,
+    userType,
+    answer,
+  } = req.body;
+
+  console.log("HEYYYYYY");
 
   // Check if user already exists
   const existingUser = await User.findOne({ email });
@@ -129,21 +139,20 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
         `,
   };
 
-try{
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-      res.status(400).send("Something went wrong.");
-    } else {
-      console.log("Email sent: " + info.response);
-      res.status(200).send("Form submitted successfully!");
-    }
-  });
-} catch (err) {
-  console.error(err.message);
-  res.status(500).json("Internal server error");
-}
-
+  try {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send("Something went wrong.");
+      } else {
+        console.log("Email sent: " + info.response);
+        res.status(200).send("Form submitted successfully!");
+      }
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json("Internal server error");
+  }
 
   // try {
   //   await sendEmail(mailOptions);
@@ -183,8 +192,7 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
   // Mark the account as verified
   user.isVerified = true;
   await user.save();
-  res
-    .status(200)
+  res.status(200);
   html: `
   <!DOCTYPE html>
 <html lang="en">
@@ -261,7 +269,7 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
 </body>
 
 </html>
- `
+ `;
 });
 
 // User Signin

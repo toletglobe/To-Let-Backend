@@ -21,7 +21,6 @@ const loadPincodeData = async () => {
   console.log("Pincode data loaded successfully");
 };
 
-
 connectDB()
   .then(() => {
     console.log("Ready to process CSV and upload to MongoDB");
@@ -70,7 +69,7 @@ const getPincode = (city, locality) => {
                   })
                   .filter(Boolean) // Remove any empty strings
               : [
-                "https://res.cloudinary.com/dxhgvsse5/image/upload/v1733669680/Screenshot_2024-12-08_at_8.24.13_PM_ouxv0z.png",
+                  "https://res.cloudinary.com/dxhgvsse5/image/upload/v1738442372/defaultHouse_mtutmq.jpg",
                 ],
           videos:
             item.videos !== "NA"
@@ -175,5 +174,3 @@ const getPincode = (city, locality) => {
     }
   }
 })();
-
-

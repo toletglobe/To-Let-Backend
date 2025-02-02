@@ -2,6 +2,7 @@ const { jwtDecode } = require("jwt-decode");
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const { uploadOnCloudinary } = require("../utils/cloudinary.js");
+const Property = require("../models/propertyModel");
 
 exports.getUserInfo = async (req, res) => {
   try {
@@ -92,6 +93,99 @@ exports.uploadProfilePicture = async (req, res) => {
     });
   } catch (error) {
     console.error("Error in uploading profile picture:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.addToFavourites = async (req, res) => {
+  try {
+    console.log("HIT API");
+    const { userId, propertyId } = req.body;
+
+    if (!userId || !propertyId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Property ID are required" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { favourites: propertyId } }, // $addToSet adds value to array if it doesn't exist
+      { new: true } // Returns the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Property added to favourites successfully",
+      favourites: updatedUser.favouriteProperties,
+    });
+  } catch (error) {
+    console.error("Error updating favourite property: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.getFavourites = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const favouritesList = await User.findById(userId, "favourites");
+
+    // Fetch all properties whose IDs are in the user's favourites array
+    const favouriteProperties = await Property.find({
+      _id: { $in: user.favourites },
+    });
+
+    res.status(200).json({
+      message: "Favourites retrieved successfully",
+      favourites: favouriteProperties,
+      favouritesList: favouritesList,
+    });
+  } catch (error) {
+    console.error("Error fetching favourites: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.removeFromFavourites = async (req, res) => {
+  try {
+    const { userId, propertyId } = req.body;
+
+    if (!userId || !propertyId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Property ID are required" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { favourites: propertyId } }, // $pull removes the value from array
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Property removed from favourites successfully",
+      favourites: updatedUser.favouriteProperties,
+    });
+  } catch (error) {
+    console.error("Error removing property from favourites: ", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
