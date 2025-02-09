@@ -7,8 +7,9 @@ const { ApiError } = require("../utils/ApiError.js");
 // Route for Getting all Blogs Data
 const allBlogs = async (req, res) => {
   try {
-    const { page = 1, limit = 6, sortBy } = req.query;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 9, sortBy = "latest" } = req.query;
+    // console.log(page, limit, sortBy);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     let blogs;
 
     if (sortBy === "trending") {
@@ -18,7 +19,7 @@ const allBlogs = async (req, res) => {
         .limit(parseInt(limit));
     } else if (sortBy === "latest") {
       blogs = await Blog.find({})
-        .sort({ createdAt: 1 })
+        .sort({ date: -1 })
         .skip(skip)
         .limit(parseInt(limit));
     } else {
@@ -26,7 +27,9 @@ const allBlogs = async (req, res) => {
     }
 
     const totalBlogs = await Blog.countDocuments();
-    const totalPages = Math.ceil(totalBlogs / limit);
+    const totalPages = Math.ceil(totalBlogs / parseInt(limit));
+
+    console.log(totalBlogs);
 
     res.json({
       data: blogs,
@@ -35,7 +38,7 @@ const allBlogs = async (req, res) => {
       totalBlogs,
     });
   } catch (error) {
-    console.error("Error fetching blogs:", error); // Log error for debugging
+    console.error("Error fetching blogs:", error);
     res.status(500).json({ error: "Failed to fetch blogs" });
   }
 };
@@ -66,12 +69,12 @@ const blogDetails = async (req, res) => {
 
 const updateLikes = async (req, res, next) => {
   console.log(req.params);
-  const blog = await Blog.findOne({slug:req.params.id});
+  const blog = await Blog.findOne({ slug: req.params.id });
   const userId = req.userId;
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
   }
-console.log(blog)
+  console.log(blog);
   const isLiked = blog.likes.includes(userId);
 
   let updatedBlog;
@@ -79,7 +82,7 @@ console.log(blog)
   if (isLiked) {
     // If the user has already liked the blog, unlike it
     updatedBlog = await Blog.findOneAndUpdate(
-      {slug: req.params.id},
+      { slug: req.params.id },
       { $pull: { likes: userId } },
       { new: true }
     );
@@ -91,7 +94,7 @@ console.log(blog)
   } else {
     // If the user hasn't liked the blog, like it
     updatedBlog = await Blog.findOneAndUpdate(
-     {slug:  req.params.id},
+      { slug: req.params.id },
       { $push: { likes: userId } },
       { new: true }
     );
