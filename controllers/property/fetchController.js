@@ -5,16 +5,51 @@ const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 const path = require("path");
 const fs = require("fs");
+const client = require("../../redis");
+
+// getPropertiesByUserId,getPropertiesByStatus,getFilteredProperties
+
+// const getPropertiesByUserId = async (req, res) => {
+//   try {
+//     const userId = req.params.userId;
+//     const properties = await Property.find({ userId: userId });
+//     return res.status(200).json(properties);
+//   } catch (error) {
+//     return res.status(500).json({ message: error.message });
+//   }
+// };
 
 const getPropertiesByUserId = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const properties = await Property.find({ userId: userId });
+    const cacheKey = `properties_${userId}`;
+
+    // Check Redis cache first
+    let properties = await client.get(cacheKey);
+
+    if (properties) {
+      console.log("Serving from cache");
+      return res.status(200).json(JSON.parse(properties));
+    }
+
+    // If not in cache, fetch from database
+    properties = await Property.find({ userId });
+
+    if (!properties || properties.length === 0) {
+      return res.status(404).json({ message: "No properties found for this user" });
+    }
+
+    // Store data in Redis cache
+    await client.set(cacheKey, JSON.stringify(properties));
+    await client.expire(cacheKey, 300); // Cache expires in 5 minutes
+
     return res.status(200).json(properties);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    console.error("Error fetching properties:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const getPropertyById = async (req, res) => {
   try {
@@ -36,6 +71,169 @@ const getPropertyById = async (req, res) => {
   }
 };
 
+// const getFilteredProperties = async (req, res) => {
+//   try {
+//     const {
+//       bhk,
+//       residential,
+//       commercial,
+//       preferenceHousing,
+//       genderPreference,
+//       houseType,
+//       city,
+//       locality,
+//       area,
+//       page = 1,
+//       limit = 9,
+//     } = req.query;
+
+//     const filter = {};
+
+//     // Handling BHK filter
+//     if (bhk) {
+//       const bhkValues = bhk
+//         .split(",")
+//         .map((b) => parseInt(b.replace(/\D/g, "")));
+//       if (bhkValues[0] === 5) {
+//         filter.bhk = { $gte: 5 };
+//       } else {
+//         filter.bhk = { $in: bhkValues };
+//       }
+//     }
+
+//     // Handling residential filter
+//     if (residential) {
+//       const residentialTypes = residential
+//         .split(",")
+//         .map((t) => t.replace(/^\+ /, ""));
+//       filter.propertyType = { $in: residentialTypes };
+//     }
+
+//     // Handling commercial filter
+//     if (commercial) {
+//       const commercialTypes = commercial
+//         .split(",")
+//         .map((t) => t.replace(/^\+ /, ""));
+//       filter.propertyType = {
+//         $in: [...(filter.propertyType?.$in || []), ...commercialTypes],
+//       };
+//     }
+
+//     // Handling preferenceHousing filter
+//     if (preferenceHousing) {
+//       if (preferenceHousing === "Any") {
+//         // No filter needed for 'Any'
+//       } else {
+//         filter.preference = preferenceHousing;
+//       }
+//     }
+
+//     // Handling genderPreference filter
+//     if (genderPreference && preferenceHousing !== "Family") {
+//       if (genderPreference === "Others") {
+//         filter.bachelors = {
+//           $in: ["Boys", "Girls"],
+//         };
+//       } else {
+//         filter.bachelors = {
+//           $in: Array.isArray(genderPreference)
+//             ? genderPreference
+//             : [genderPreference],
+//         };
+//       }
+//     }
+
+//     // Handling houseType filter
+//     if (houseType) {
+//       const houseTypes = houseType.split(",");
+//       filter.type = { $in: houseTypes };
+//     }
+// //getting data from data.json to validate the areas
+//     let validAreas = null;
+//     const dataFilePath = path.join(__dirname, "..", "..", "data.json");
+//     const rawData = fs.readFileSync(dataFilePath, "utf-8");
+//     const areaData = JSON.parse(rawData);
+//     const toTitleCase = (text) => {
+//       return text
+//         .toLowerCase()
+//         .split(" ")
+//         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+//         .join(" ");
+//     };
+
+//     // Utility function to fetch valid areas and their neighboring areas
+//     const getValidAreas = (areas, areaData) => {
+//       const formattedAreas = areas.map(toTitleCase);
+
+//       return areaData
+//         .filter((entry) => {
+//           const entryArea = toTitleCase(entry.Area.trim());
+//           const entryAREA = toTitleCase(entry.AREA.trim());
+
+//           return (
+//             formattedAreas.includes(entryArea) ||
+//             formattedAreas.includes(entryAREA)
+//           );
+//         })
+//         .flatMap((entry) => {
+//           const mainArea = toTitleCase(entry.Area.trim());
+
+//           // Extract neighboring areas safely
+//           const neighbors = entry["Neighbouring Areas"]
+//             ? entry["Neighbouring Areas"]
+//                 .split(",")
+//                 .map((a) => toTitleCase(a.trim()))
+//             : [];
+
+//           return [mainArea, ...neighbors];
+//         });
+//     };
+
+//     // Handling city filter
+//     if (city) {
+//       filter.city = city;
+//       if (locality) {
+//         filter.locality = toTitleCase(locality);
+//       }
+//       if (area) {
+//         const areas = area.split(",").map((a) => a.trim());
+//         validAreas = getValidAreas(areas, areaData);
+//         if (validAreas.length > 0) {
+//           filter.area = { $in: validAreas };
+//         }
+//         console.log(validAreas);
+//       }
+//     }
+
+//     // Pagination logic
+//     const pageNum = Number(page);
+//     const limitNum = Number(limit);
+//     const skip = (pageNum - 1) * limitNum;
+
+//     // Fetch filtered properties from the database with pagination
+//     const properties = await Property.find(filter).skip(skip).limit(limitNum);
+
+//     const total = await Property.find(filter).countDocuments(); // Total number of properties
+//     const totalPages = Math.ceil(total / limitNum);
+
+//     // Send successful response with filtered properties
+//     res.status(200).json({
+//       success: true,
+//       data: properties,
+//       page: pageNum,
+//       limit: limitNum,
+//       totalPages: totalPages,
+//     });
+//   } catch (error) {
+//     // Send error response
+//     res.status(500).json({
+//       success: false,
+//       message: "Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getFilteredProperties = async (req, res) => {
   try {
     const {
@@ -52,121 +250,55 @@ const getFilteredProperties = async (req, res) => {
       limit = 9,
     } = req.query;
 
+    // Create a unique cache key based on query parameters
+    const cacheKey = `filtered_properties:${JSON.stringify(req.query)}`;
+
+    // Check Redis cache first
+    let cachedProperties = await client.get(cacheKey);
+    if (cachedProperties) {
+      console.log("Serving from cache");
+      return res.status(200).json(JSON.parse(cachedProperties));
+    }
+
     const filter = {};
 
     // Handling BHK filter
     if (bhk) {
-      const bhkValues = bhk
-        .split(",")
-        .map((b) => parseInt(b.replace(/\D/g, "")));
-      if (bhkValues[0] === 5) {
-        filter.bhk = { $gte: 5 };
-      } else {
-        filter.bhk = { $in: bhkValues };
-      }
+      const bhkValues = bhk.split(",").map((b) => parseInt(b.replace(/\D/g, "")));
+      filter.bhk = bhkValues.includes(5) ? { $gte: 5 } : { $in: bhkValues };
     }
 
-    // Handling residential filter
+    // Handling property type filters (residential + commercial)
     if (residential) {
-      const residentialTypes = residential
-        .split(",")
-        .map((t) => t.replace(/^\+ /, ""));
-      filter.propertyType = { $in: residentialTypes };
+      filter.propertyType = { $in: residential.split(",").map((t) => t.trim()) };
     }
-
-    // Handling commercial filter
     if (commercial) {
-      const commercialTypes = commercial
-        .split(",")
-        .map((t) => t.replace(/^\+ /, ""));
       filter.propertyType = {
-        $in: [...(filter.propertyType?.$in || []), ...commercialTypes],
+        $in: [...(filter.propertyType?.$in || []), ...commercial.split(",").map((t) => t.trim())],
       };
     }
 
-    // Handling preferenceHousing filter
-    if (preferenceHousing) {
-      if (preferenceHousing === "Any") {
-        // No filter needed for 'Any'
-      } else {
-        filter.preference = preferenceHousing;
-      }
+    // Handling preference filters
+    if (preferenceHousing && preferenceHousing !== "Any") {
+      filter.preference = preferenceHousing;
     }
-
-    // Handling genderPreference filter
     if (genderPreference && preferenceHousing !== "Family") {
-      if (genderPreference === "Others") {
-        filter.bachelors = {
-          $in: ["Boys", "Girls"],
-        };
-      } else {
-        filter.bachelors = {
-          $in: Array.isArray(genderPreference)
-            ? genderPreference
-            : [genderPreference],
-        };
-      }
+      filter.bachelors = { $in: genderPreference === "Others" ? ["Boys", "Girls"] : [genderPreference] };
     }
 
-    // Handling houseType filter
+    // Handling house type filter
     if (houseType) {
-      const houseTypes = houseType.split(",");
-      filter.type = { $in: houseTypes };
+      filter.type = { $in: houseType.split(",") };
     }
-//getting data from data.json to validate the areas
-    let validAreas = null;
-    const dataFilePath = path.join(__dirname, "..", "..", "data.json");
-    const rawData = fs.readFileSync(dataFilePath, "utf-8");
-    const areaData = JSON.parse(rawData);
-    const toTitleCase = (text) => {
-      return text
-        .toLowerCase()
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    };
 
-    // Utility function to fetch valid areas and their neighboring areas
-    const getValidAreas = (areas, areaData) => {
-      const formattedAreas = areas.map(toTitleCase);
-
-      return areaData
-        .filter((entry) => {
-          const entryArea = toTitleCase(entry.Area.trim());
-          const entryAREA = toTitleCase(entry.AREA.trim());
-
-          return (
-            formattedAreas.includes(entryArea) ||
-            formattedAreas.includes(entryAREA)
-          );
-        })
-        .flatMap((entry) => {
-          const mainArea = toTitleCase(entry.Area.trim());
-
-          // Extract neighboring areas safely
-          const neighbors = entry["Neighbouring Areas"]
-            ? entry["Neighbouring Areas"]
-                .split(",")
-                .map((a) => toTitleCase(a.trim()))
-            : [];
-
-          return [mainArea, ...neighbors];
-        });
-    };
-
-    // Handling city filter
+    // Handling city, locality, and area filters
     if (city) {
       filter.city = city;
-      if (locality) {
-        filter.locality = toTitleCase(locality);
-      }
+      if (locality) filter.locality = toTitleCase(locality);
       if (area) {
         const areas = area.split(",").map((a) => a.trim());
         validAreas = getValidAreas(areas, areaData);
-        if (validAreas.length > 0) {
-          filter.area = { $in: validAreas };
-        }
-        console.log(validAreas);
+        if (validAreas.length > 0) filter.area = { $in: validAreas };
       }
     }
 
@@ -177,21 +309,24 @@ const getFilteredProperties = async (req, res) => {
 
     // Fetch filtered properties from the database with pagination
     const properties = await Property.find(filter).skip(skip).limit(limitNum);
-
-    const total = await Property.find(filter).countDocuments(); // Total number of properties
+    const total = await Property.countDocuments(filter);
     const totalPages = Math.ceil(total / limitNum);
 
-    // Send successful response with filtered properties
-    res.status(200).json({
+    const response = {
       success: true,
       data: properties,
       page: pageNum,
       limit: limitNum,
       totalPages: totalPages,
-    });
+    };
+
+    // Store result in Redis cache for 5 minutes
+    await client.set(cacheKey, JSON.stringify(response));
+    await client.expire(cacheKey, 300);
+
+    return res.status(200).json(response);
   } catch (error) {
-    // Send error response
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server Error",
       error: error.message,
@@ -199,9 +334,50 @@ const getFilteredProperties = async (req, res) => {
   }
 };
 
+
+// const getPropertiesByStatus = async (req, res) => {
+//   try {
+//     const { status = "Available", page = 1, limit = 9 } = req.query;
+
+//     // Define the filter for availabilityStatus
+//     const filter = { availabilityStatus: status };
+
+//     // Pagination setup
+//     const pageNum = Number(page);
+//     const limitNum = Number(limit);
+//     const skip = (pageNum - 1) * limitNum;
+
+//     // Fetch properties based on availabilityStatus with pagination
+//     const properties = await Property.find(filter).skip(skip).limit(limitNum);
+
+//     res.status(200).json({
+//       success: true,
+//       data: properties,
+//       page: pageNum,
+//       limit: limitNum,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Server Error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const getPropertiesByStatus = async (req, res) => {
   try {
     const { status = "Available", page = 1, limit = 9 } = req.query;
+
+    // Generate a unique cache key
+    const cacheKey = `properties_status:${status}_page:${page}_limit:${limit}`;
+
+    // Check Redis cache first
+    let cachedProperties = await client.get(cacheKey);
+    if (cachedProperties) {
+      console.log("Serving from cache");
+      return res.status(200).json(JSON.parse(cachedProperties));
+    }
 
     // Define the filter for availabilityStatus
     const filter = { availabilityStatus: status };
@@ -211,23 +387,30 @@ const getPropertiesByStatus = async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Fetch properties based on availabilityStatus with pagination
+    // Fetch properties from the database
     const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
-    res.status(200).json({
+    // Cache the results in Redis
+    await client.set(cacheKey, JSON.stringify(properties));
+    await client.expire(cacheKey, 300); // Cache expires in 5 minutes
+
+    return res.status(200).json({
       success: true,
       data: properties,
       page: pageNum,
       limit: limitNum,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Error fetching properties by status:", error);
+    return res.status(500).json({
       success: false,
       message: "Server Error",
       error: error.message,
     });
   }
 };
+
+
 const propertyBySlug = asyncHandler(async (req, res, next) => {
   const property = await Property.findOne({ slug: req.params.slug });
   if (!property) {

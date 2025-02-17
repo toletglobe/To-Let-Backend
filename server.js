@@ -62,15 +62,21 @@ app.use("/api/v1/faq", faqRoutes);
 // error handler middleware
 app.use(errorHandler);
 
-cron.schedule('* * * * *', async () => {
-  console.log('Checking for properties to mark as rented...');
+cron.schedule("* * * * *", async () => {
+  console.log("Checking for properties to mark as rented...");
   try {
-    await markPropertyAsRented();
-    console.log('Property statuses updated successfully.');
+    const propertiesUpdated = await markPropertyAsRented();
+    
+    if (propertiesUpdated.length === 0) {
+      console.log("No new properties to update.");
+    } else {
+      console.log("Property statuses updated successfully.");
+    }
   } catch (error) {
-    console.error('Error updating property statuses:', error);
+    console.error("Error updating property statuses:", error);
   }
 });
+
 // email sender
 app.use(emailSender);
 
