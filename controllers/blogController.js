@@ -50,8 +50,9 @@ const client = require("../redis");
 
 const allBlogs = async (req, res) => {
   try {
-    const { page = 1, limit = 6, sortBy } = req.query;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 9, sortBy = "latest" } = req.query;
+    // console.log(page, limit, sortBy);
+    const skip = (parseInt(page) - 1) * parseInt(limit);
     let blogs;
     
     // Generate a dynamic cache key based on query params
@@ -71,7 +72,11 @@ const allBlogs = async (req, res) => {
         .limit(parseInt(limit));
     } else if (sortBy === "latest") {
       blogs = await Blog.find({})
+<<<<<<< HEAD
         .sort({ createdAt: -1 }) // Use -1 for descending order (newest first)
+=======
+        .sort({ date: -1 })
+>>>>>>> d4df9eee8fc83e8be262c359656a9350141ade28
         .skip(skip)
         .limit(parseInt(limit));
     } else {
@@ -79,7 +84,9 @@ const allBlogs = async (req, res) => {
     }
 
     const totalBlogs = await Blog.countDocuments();
-    const totalPages = Math.ceil(totalBlogs / limit);
+    const totalPages = Math.ceil(totalBlogs / parseInt(limit));
+
+    console.log(totalBlogs);
 
     const responseData = {
       data: blogs,
@@ -164,11 +171,22 @@ const blogDetails = async (req, res) => {
 // };
 
 const updateLikes = async (req, res, next) => {
+<<<<<<< HEAD
   try {
     console.log(req.params);
     const userId = req.userId;
     const blogSlug = req.params.id;
     const cacheKey = `blog_likes_${blogSlug}`;
+=======
+  console.log(req.params);
+  const blog = await Blog.findOne({ slug: req.params.id });
+  const userId = req.userId;
+  if (!blog) {
+    return res.status(404).json({ success: false, message: "Blog not found" });
+  }
+  console.log(blog);
+  const isLiked = blog.likes.includes(userId);
+>>>>>>> d4df9eee8fc83e8be262c359656a9350141ade28
 
     // Check Redis cache
     let blogLikes = await client.get(cacheKey);
@@ -209,10 +227,36 @@ const updateLikes = async (req, res, next) => {
     await client.set(cacheKey, JSON.stringify(updatedBlog.likes));
     await client.expire(cacheKey, 60);
 
+<<<<<<< HEAD
     res.status(200).json({
       success: true,
       updatedBlog,
       message: isLiked ? "Blog unliked successfully." : "Blog liked successfully.",
+=======
+  if (isLiked) {
+    // If the user has already liked the blog, unlike it
+    updatedBlog = await Blog.findOneAndUpdate(
+      { slug: req.params.id },
+      { $pull: { likes: userId } },
+      { new: true }
+    );
+    res.status(200).json({
+      success: true,
+      updatedBlog,
+      message: "Blog unlike successfully.",
+    });
+  } else {
+    // If the user hasn't liked the blog, like it
+    updatedBlog = await Blog.findOneAndUpdate(
+      { slug: req.params.id },
+      { $push: { likes: userId } },
+      { new: true }
+    );
+    res.status(200).json({
+      success: true,
+      updatedBlog,
+      message: "Blog liked successfully.",
+>>>>>>> d4df9eee8fc83e8be262c359656a9350141ade28
     });
   } catch (error) {
     console.error("Error updating likes:", error);

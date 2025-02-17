@@ -7,7 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const client = require("../../redis");
 
-// getPropertiesByUserId,getPropertiesByStatus,getFilteredProperties
+// getPropertiesByUserId,getPropertiesByStatus,getFilteredProperties change
 
 // const getPropertiesByUserId = async (req, res) => {
 //   try {
