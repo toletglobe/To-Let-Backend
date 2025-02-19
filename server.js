@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const helmet = require('helmet');
 const bodyParser = require("body-parser");
 dotenv.config();
 const session = require("express-session");
@@ -32,13 +33,14 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }, // Set to true in production with HTTPS
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Set to true in production with HTTPS
   })
 );
 
 app.use(express.json({ limit: "20kb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(helmet())
 
 // *******Dont touch above **********
 
