@@ -20,6 +20,7 @@ const blogSchema = new Schema({
   
   date: Date,
   intro: String,
+  readingTime:String,
   slug: String,
 });
 
