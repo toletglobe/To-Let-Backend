@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const bodyParser = require("body-parser");
-dotenv.config();
+dotenv.config({ path: "./config.env" });
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -13,9 +13,9 @@ const blogRoutes = require("./routes/blogRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const { errorHandler } = require("./middlewares/errorHandler.js");
-const cron = require('node-cron');
-const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
-const emailSender=require('./utils/sendEmail.js');
+const cron = require("node-cron");
+const { markPropertyAsRented } = require("./utils/propertyUtils"); // Adjust the path if necessary
+const emailSender = require("./utils/sendEmail.js");
 const faqRoutes = require("./routes/FAQroutes.js");
 
 const app = express();
@@ -62,13 +62,13 @@ app.use("/api/v1/faq", faqRoutes);
 // error handler middleware
 app.use(errorHandler);
 
-cron.schedule('* * * * *', async () => {
-  console.log('Checking for properties to mark as rented...');
+cron.schedule("* * * * *", async () => {
+  console.log("Checking for properties to mark as rented...");
   try {
     await markPropertyAsRented();
-    console.log('Property statuses updated successfully.');
+    console.log("Property statuses updated successfully.");
   } catch (error) {
-    console.error('Error updating property statuses:', error);
+    console.error("Error updating property statuses:", error);
   }
 });
 // email sender

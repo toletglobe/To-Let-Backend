@@ -3,6 +3,7 @@ const {
   addProperty,
   GetProperty,
   updateProperty,
+  updatePropertyAvailabilityStatus,
   deleteProperty,
   getPropertyById,
   getFilteredProperties,
@@ -48,6 +49,10 @@ router.get("/status", getPropertiesByStatus);
 // router.route("/").get(GetProperty); //change names and methods according to your endpoints
 
 router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
+
+router
+  .route("/update-property-availability-status/:id")
+  .patch(updatePropertyAvailabilityStatus);
 
 router.route("/:id").delete(deleteProperty); //change names and methods according to your endpoints
 
