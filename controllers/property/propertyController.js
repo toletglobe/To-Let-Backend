@@ -272,7 +272,7 @@ const updateProperty = async (req, res) => {
     // Save the updated property
     const updatedProperty = await property.save();
 
-   // console.log(updatedProperty);
+    // console.log(updatedProperty);
 
     return res.status(200).json({
       statusCode: 200,
@@ -327,8 +327,67 @@ const deleteProperty = async (req, res) => {
   }
 };
 
+const updatePropertyAvailabilityStatus = async (req, res) => {
+  try {
+    const { id: propertyId } = req.params;
+    const { userId, availabilityStatus } = req.body;
+
+    if (!propertyId) {
+      return res.status(400).json({ message: "Property ID is required" });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    // Find the property by ID
+    let property = await Property.findById(propertyId);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return an error if the user is neither an admin nor the property owner
+    if (user.role !== "admin" && property.userId.toString() !== userId) {
+      return res.status(403).json({
+        message:
+          "Unauthorized! Only admin or propertyOwner can change the availabilityStatus.",
+      });
+    }
+
+    // Allowed values for availabilityStatus
+    const allowedStatuses = ["Available", "Rented Out", "NA"];
+
+    if (!allowedStatuses.includes(availabilityStatus)) {
+      return res.status(400).json({
+        message: `Invalid availabilityStatus. Allowed values: ${allowedStatuses.join(
+          ", "
+        )}`,
+      });
+    }
+
+    // Update availabilityStatus only if it exists in the schema
+    property.availabilityStatus = availabilityStatus;
+    const updatedProperty = await property.save();
+
+    return res.status(200).json({
+      statusCode: 200,
+      property: updatedProperty,
+      message: "Property availability status updated successfully.",
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
+  updatePropertyAvailabilityStatus,
 };
