@@ -40,8 +40,8 @@ app.use(
 app.use(express.json({ limit: "20kb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
-app.use(helmet())
 
+app.use(helmet())
 // *******Dont touch above **********
 
 // add your routes here import here, also add here
