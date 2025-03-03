@@ -176,34 +176,7 @@ const getFilteredProperties = async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     // Fetch filtered properties from the database with pagination
-    // const properties = await Property.find(filter).skip(skip).limit(limitNum);
-
-    const properties = await Property.aggregate([
-      {
-        $addFields: {
-          sortOrder: {
-            $switch: {
-              branches: [
-                {
-                  case: { $eq: ["$availabilityStatus", "Available"] },
-                  then: 1,
-                },
-                {
-                  case: { $eq: ["$availabilityStatus", "Rented Out"] },
-                  then: 2,
-                },
-                { case: { $eq: ["$availabilityStatus", "NA"] }, then: 3 },
-              ],
-              default: 4, // For any unexpected values
-            },
-          },
-        },
-      },
-      { $sort: { sortOrder: 1 } }, // Sorting based on custom priority
-      { $project: { sortOrder: 0 } }, // Remove the temporary field from output
-      { $skip: skip },
-      { $limit: limitNum },
-    ]);
+    const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
     const total = await Property.find(filter).countDocuments(); // Total number of properties
     const totalPages = Math.ceil(total / limitNum);
