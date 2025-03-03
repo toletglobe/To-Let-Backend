@@ -17,6 +17,8 @@ const {
 
 const upload = require("../middlewares/multer.js");
 
+const Property=require("../models/propertyModel.js")
+
 const authenticate = require("../middlewares/authMiddleware.js");
 
 const router = express.Router();
@@ -81,5 +83,54 @@ router.get("/slug/:slug", propertyBySlug);
 router.route("/").delete(addProperty); //change names and methods according to your endpoints
 
 */
+// router.put("/:id/availability", async (req, res) => {
+//   try {
+//     // Find property by ID
+//     const property = await Property.findById(req.params.id);
+//     if (!property) {
+//       return res.status(404).json({ message: "Property not found" });
+//     }
+
+//     // Validate status
+//     const validStatuses = ["Available", "Rented Out", "NA"];
+//     if (!validStatuses.includes(req.body.availabilityStatus)) {
+//       return res.status(400).json({ message: "Invalid status" });
+//     }
+
+//     // Update status directly
+//     property.availabilityStatus = req.body.availabilityStatus;
+//     await property.save();
+
+//     res.json(property);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+router.put("/:id/availability", async (req, res) => {
+  try {
+    console.log("Received Request to Update Availability:", req.params.id, req.body);
+
+    // Find property by ID
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    // Validate status
+    const validStatuses = ["Available", "Rented Out", "NA"];
+    if (!validStatuses.includes(req.body.availabilityStatus)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    // Update status directly
+    property.availabilityStatus = req.body.availabilityStatus;
+    await property.save();
+
+    res.json(property);
+  } catch (error) {
+    console.error("Error updating availability:", error); // Log full error
+    res.status(500).json({ message: error.message });
+  }
+});
 
 module.exports = router;
