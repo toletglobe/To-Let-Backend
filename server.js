@@ -22,10 +22,12 @@ const faqRoutes = require("./routes/FAQroutes.js");
 const app = express();
 
 app.use(
-  cors({
+  cors(
+    {
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-  })
+  }
+)
 );
 
 app.use(
