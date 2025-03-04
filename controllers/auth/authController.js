@@ -64,7 +64,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   const mailOptions = {
     from: process.env.SMTP_USER,
     // to: user.email,
-    to: user.email,
+    to: "02amol@gmail.com",
     subject: "Verify Your Account",
     text: `Please click the following link to verify your account: ${verificationUrl}`,
     //     html: `
