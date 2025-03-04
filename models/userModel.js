@@ -74,7 +74,7 @@ const UserSchema = new mongoose.Schema({
   // Verification status - defaults to false
   isVerified: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 
   // Security question for password recovery
