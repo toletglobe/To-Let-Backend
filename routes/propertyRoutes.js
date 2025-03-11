@@ -16,8 +16,7 @@ const {
 } = require("../controllers/property/index.js");
 
 const upload = require("../middlewares/multer.js");
-const jwt=require("jsonwebtoken");
-const Property=require("../models/propertyModel.js")
+const Property=require("../models/propertyModel.js");
 const authenticate = require("../middlewares/authMiddleware.js");
 //const { BASE_URL } = require("../../Tolet-Globe-Frontend/src/constant/constant.js");
 // import("../../Tolet-Globe-Frontend/src/constant/constant.js").then(({ BASE_URL }) => {
@@ -86,72 +85,53 @@ router.get("/slug/:slug", propertyBySlug);
 router.route("/").delete(addProperty); //change names and methods according to your endpoints
 
 */
-// router.put(`/:id/availability`, async (req, res) => {
+// router.put("/:id/availability", async (req, res) => {
 //   try {
-//     // Get token from headers
-//     const token = req.headers.authorization?.split(' ')[1];
-//     if (!token) {
-//       return res.status(401).json({ message: 'No token provided' });
-//     }
-
-//     // Verify token
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-//     const userId = decoded.id;
-//     const userRole = decoded.role;
-
-//     // Find property
+//     // Find property by ID
 //     const property = await Property.findById(req.params.id);
 //     if (!property) {
-//       return res.status(404).json({ message: 'Property not found' });
-//     }
-
-//     // Authorization check
-//     const isOwner = property.userId.toString() === userId;
-//     const isAdmin = userRole === 'admin';
-    
-//     if (!isOwner && !isAdmin) {
-//       return res.status(403).json({ message: 'Unauthorized access' });
+//       return res.status(404).json({ message: "Property not found" });
 //     }
 
 //     // Validate status
-//     const validStatuses = ['Available', 'Rented Out', 'NA'];
+//     const validStatuses = ["Available", "Rented Out", "NA"];
 //     if (!validStatuses.includes(req.body.availabilityStatus)) {
-//       return res.status(400).json({ message: 'Invalid status' });
+//       return res.status(400).json({ message: "Invalid status" });
 //     }
 
-//     // Update status
+//     // Update status directly
 //     property.availabilityStatus = req.body.availabilityStatus;
 //     await property.save();
 
 //     res.json(property);
 //   } catch (error) {
-//     if (error.name === 'JsonWebTokenError') {
-//       return res.status(401).json({ message: 'Invalid token' });
-//     }
 //     res.status(500).json({ message: error.message });
 //   }
 // });
 router.put("/:id/availability", async (req, res) => {
   try {
-    // Find property by ID
+    console.log("Request received to update availability status", req.body);
+
     const property = await Property.findById(req.params.id);
     if (!property) {
+      console.log("Property not found for ID:", req.params.id);
       return res.status(404).json({ message: "Property not found" });
     }
 
-    // Validate status
     const validStatuses = ["Available", "Rented Out", "NA"];
     if (!validStatuses.includes(req.body.availabilityStatus)) {
+      console.log("Invalid status received:", req.body.availabilityStatus);
       return res.status(400).json({ message: "Invalid status" });
     }
 
-    // Update status directly
     property.availabilityStatus = req.body.availabilityStatus;
     await property.save();
-
+    console.log("Property status updated successfully:", property);
+    
     res.json(property);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error updating property availability status:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
