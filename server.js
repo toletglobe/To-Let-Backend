@@ -18,6 +18,7 @@ const cron = require('node-cron');
 const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
 const emailSender=require('./utils/sendEmail.js');
 const faqRoutes = require("./routes/FAQroutes.js");
+const pricingRoutes = require("./routes/pricingRoutes.js");
 
 const app = express();
 
@@ -62,6 +63,7 @@ app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/faq", faqRoutes);
+app.use("/api/v1/pricing", pricingRoutes);
 
 // error handler middleware
 app.use(errorHandler);
