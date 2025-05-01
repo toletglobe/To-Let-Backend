@@ -24,13 +24,18 @@ const pricingSchema = new mongoose.Schema(
         message: "Phone number should be exactly 10 digits",
       },
     },
-    alternativeNumber: {
-      type: Number,
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      unique: false,
+      lowercase: true,
+      trim: true,
       validate: {
         validator: function (v) {
-          return /^\d{10}$/.test(v); // Ensure phone number is exactly 10 digits
+          // Simple email regex
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
         },
-        message: "Phone number should be exactly 10 digits",
+        message: "Please enter a valid email address",
       },
     },
 

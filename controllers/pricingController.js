@@ -8,7 +8,7 @@ const pricingSubmit = async (req, res) => {
       firstName,
       lastName,
       phoneNumber,
-      alternativeNumber, 
+      email, 
       stayingWith,
       profession,
       dateOfVisit,
@@ -26,25 +26,34 @@ const pricingSubmit = async (req, res) => {
         pass: process.env.GMAIL_PASSWORD,
       },
     });
-
     const mailOptions = {
       from: {
         name: "ToLetGlobe Form",
         address: process.env.GMAIL_USER,
       },
-      to: process.env.GMAIL_RECEIVER,
-      subject: `Enquiry from ${firstName} ${lastName}`,
+      to: email, // Send email to the user who submitted the form
+      subject: `Enquiry Confirmation - ToLetGlobe`,
       text: `
-First Name: ${firstName}
-Last Name: ${lastName}
-AlternativeNumber: ${alternativeNumber}
-Phone Number: ${phoneNumber}
-Staying With: ${stayingWith}
-Profession: ${profession}
-Date of Visit: ${dateOfVisit}
-Time Slot: ${timeSlot}`,
+    Hi ${firstName} ${lastName},
+    
+    Thank you for your enquiry. We have received the following details:
+    
+    First Name: ${firstName}
+    Last Name: ${lastName}
+    Email: ${email}
+    Phone Number: ${phoneNumber}
+    Staying With: ${stayingWith}
+    Profession: ${profession}
+    Date of Visit: ${dateOfVisit}
+    Time Slot: ${timeSlot}
+    
+    Our team will contact you shortly.
+    
+    Best regards,
+    ToLetGlobe Team
+    `,
     };
-
+    
     // Send email
     await transporter.sendMail(mailOptions);
 
@@ -53,7 +62,7 @@ Time Slot: ${timeSlot}`,
       firstName,
       lastName,
       phoneNumber,
-      alternativeNumber,
+      email,
       stayingWith,
       profession,
       dateOfVisit,
