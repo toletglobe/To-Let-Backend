@@ -12,11 +12,16 @@ const {
   getPropertyByCity,
   getPropertiesByUserId,
   getPropertyByArea,
+  updatePropertyAvailabilityStatus,
 } = require("../controllers/property/index.js");
 
 const upload = require("../middlewares/multer.js");
-
+const Property=require("../models/propertyModel.js");
 const authenticate = require("../middlewares/authMiddleware.js");
+//const { BASE_URL } = require("../../Tolet-Globe-Frontend/src/constant/constant.js");
+// import("../../Tolet-Globe-Frontend/src/constant/constant.js").then(({ BASE_URL }) => {
+//   console.log(BASE_URL);
+// });
 
 const router = express.Router();
 
@@ -49,6 +54,11 @@ router.get("/status", getPropertiesByStatus);
 
 router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
 
+router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
+router
+  .route("/update-property-availability-status/:id")
+  .patch(updatePropertyAvailabilityStatus);
+
 router.route("/:id").delete(deleteProperty); //change names and methods according to your endpoints
 
 router.route("/:id").get(getPropertyById); //change names and methods according to your endpoints
@@ -75,5 +85,54 @@ router.get("/slug/:slug", propertyBySlug);
 router.route("/").delete(addProperty); //change names and methods according to your endpoints
 
 */
+// router.put("/:id/availability", async (req, res) => {
+//   try {
+//     // Find property by ID
+//     const property = await Property.findById(req.params.id);
+//     if (!property) {
+//       return res.status(404).json({ message: "Property not found" });
+//     }
+
+//     // Validate status
+//     const validStatuses = ["Available", "Rented Out", "NA"];
+//     if (!validStatuses.includes(req.body.availabilityStatus)) {
+//       return res.status(400).json({ message: "Invalid status" });
+//     }
+
+//     // Update status directly
+//     property.availabilityStatus = req.body.availabilityStatus;
+//     await property.save();
+
+//     res.json(property);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+router.put("/:id/availability", async (req, res) => {
+  try {
+    console.log("Request received to update availability status", req.body);
+
+    const property = await Property.findById(req.params.id);
+    if (!property) {
+      console.log("Property not found for ID:", req.params.id);
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    const validStatuses = ["Available", "Rented Out", "NA"];
+    if (!validStatuses.includes(req.body.availabilityStatus)) {
+      console.log("Invalid status received:", req.body.availabilityStatus);
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    property.availabilityStatus = req.body.availabilityStatus;
+    await property.save();
+    console.log("Property status updated successfully:", property);
+    
+    res.json(property);
+  } catch (error) {
+    console.error("Error updating property availability status:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
 
 module.exports = router;

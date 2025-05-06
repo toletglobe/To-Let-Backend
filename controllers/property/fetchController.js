@@ -24,7 +24,9 @@ const getPropertyById = async (req, res) => {
       return res.status(400).json({ message: "Property ID is required" });
     }
 
-    const property = await Property.findById(propertyId).populate("reviews");
+    const property = await Property.findById(propertyId)
+      .populate("reviews") // Keep this if you need review details
+      .lean(); // Converts result to a plain JS object => reduces overhead and memory usage
 
     if (!property) {
       return res.status(404).json({ message: "Property not found" });
@@ -113,7 +115,7 @@ const getFilteredProperties = async (req, res) => {
       const houseTypes = houseType.split(",");
       filter.type = { $in: houseTypes };
     }
-//getting data from data.json to validate the areas
+    //getting data from data.json to validate the areas
     let validAreas = null;
     const dataFilePath = path.join(__dirname, "..", "..", "data.json");
     const rawData = fs.readFileSync(dataFilePath, "utf-8");

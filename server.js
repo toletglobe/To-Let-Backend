@@ -1,5 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
+const helmet = require('helmet');
 const bodyParser = require("body-parser");
 dotenv.config();
 const session = require("express-session");
@@ -17,14 +18,17 @@ const cron = require('node-cron');
 const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
 const emailSender=require('./utils/sendEmail.js');
 const faqRoutes = require("./routes/FAQroutes.js");
+const pricingRoutes = require("./routes/pricingRoutes.js");
 
 const app = express();
 
 app.use(
-  cors({
+  cors(
+    {
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-  })
+  }
+)
 );
 
 app.use(
@@ -32,14 +36,16 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }, // Set to true in production with HTTPS
+    cookie: { secure: process.env.NODE_ENV === "production" }, // Set to true in production with HTTPS
   })
 );
 
 app.use(express.json({ limit: "20kb" }));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(express.json()); // ← Ensure this is present to parse JSON bodies
 
+app.use(helmet())
 // *******Dont touch above **********
 
 // add your routes here import here, also add here
@@ -58,6 +64,7 @@ app.use("/api/v1/blog", blogRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/faq", faqRoutes);
+app.use("/api/v1/pricing", pricingRoutes);
 
 // error handler middleware
 app.use(errorHandler);
