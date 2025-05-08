@@ -44,10 +44,10 @@ const pricingSchema = new mongoose.Schema(
       required: [true, "Staying with is required"],
     },
 
-    profession: {
-      type: String,
-      required: [true, "Profession is required"],
-    },
+    profession:  { type: String, enum: ['Student', 'Working Professional', 'Business'], required: true },
+    college:     { type: String },
+    company:     { type: String },
+    business:    { type: String },
 
     dateOfVisit: {
       type: Date,
