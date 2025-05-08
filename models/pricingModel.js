@@ -27,7 +27,7 @@ const pricingSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: false,
+      // unique: false,
       lowercase: true,
       trim: true,
       validate: {
@@ -55,12 +55,11 @@ const pricingSchema = new mongoose.Schema(
     },
 
     timeSlot: {
-      type: String, 
+      type: String,
       required: [true, "Time slot is required"],
     },
-
   },
-  { timestamps: true } 
+  { timestamps: true }
 );
 
 const Pricing = mongoose.model("Pricing", pricingSchema);
