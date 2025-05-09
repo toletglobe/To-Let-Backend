@@ -30,6 +30,8 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 
   // Generate email verification token
   const verificationToken = crypto.randomBytes(32).toString("hex");
+  
+
 
   // Create new user with token fields
   const user = new User({
@@ -64,24 +66,26 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 exports.userSignin = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Find user by email and select password
-  const user = await User.findOne({ email }).select("+password");
+  console.log("LOGIN ATTEMPT FOR EMAIL:", email);
 
-  console.log("FOUND USER : ", user);
+  // Lowercase email to prevent mismatch
+  const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+
+  console.log("FOUND USER:", user);
+
   if (!user) {
     return next(new ApiError(400, "User not found."));
   }
 
-  // Compare the password with the stored hash
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
     return next(new ApiError(401, "Invalid credentials."));
   }
 
-  // Check if the user has verified their account
   if (!user.isVerified) {
     return next(new ApiError(403, "Please verify your account first."));
   }
+
   sendToken(user, 200, res);
 });
 

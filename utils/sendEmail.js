@@ -9,7 +9,7 @@ console.log("pass :- " + PASS);
 
 
 
-const sendEmail = async (email, token) => {
+const sendEmail = async (email, verificationToken) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -18,7 +18,8 @@ const sendEmail = async (email, token) => {
     },
   });
 
-  const verificationLink = `${process.env.CLIENT_URL}/api/v1/auth/verify/${token}`;
+  console.log("token:--" + verificationToken);
+  const verificationUrl = `http://localhost:5173/verify/${verificationToken}`;
 
   const mailOptions = {
     from: `"YourApp Support" <${process.env.SMTP_USER}>`,
@@ -27,7 +28,7 @@ const sendEmail = async (email, token) => {
     html: `
       <h2>Welcome to Our App 🎉</h2>
       <p>Please verify your email by clicking the link below:</p>
-      <a href="${verificationLink}" target="_blank" style="color:blue;">Verify Email</a>
+      <a href="${verificationUrl}" target="_blank" style="color:blue;">Verify Email</a>
       <p>This link will expire in 10 minutes.</p>
     `,
   };
