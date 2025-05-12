@@ -4,25 +4,22 @@ const nodemailer = require("nodemailer");
 const USER = process.env.SMTP_USER;
 const PASS = process.env.SMTP_PASS;
 
-console.log("user :- " + USER);
-console.log("pass :- " + PASS);
-
-
-
 const sendEmail = async (email, verificationToken) => {
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: process.env.SMTP_HOST,
+    port: 465,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    secure: true,
   });
 
   console.log("token:--" + verificationToken);
   const verificationUrl = `http://localhost:5173/verify/${verificationToken}`;
 
   const mailOptions = {
-    from: `"YourApp Support" <${process.env.SMTP_USER}>`,
+    from: `"To-Let Globe" <${process.env.SMTP_USER}>`,
     to: email,
     subject: "Verify Your Email",
     html: `

@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const helmet = require('helmet');
+const helmet = require("helmet");
 const bodyParser = require("body-parser");
 dotenv.config();
 const session = require("express-session");
@@ -14,21 +14,19 @@ const blogRoutes = require("./routes/blogRoutes");
 const userRoutes = require("./routes/userRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const { errorHandler } = require("./middlewares/errorHandler.js");
-const cron = require('node-cron');
-const { markPropertyAsRented } = require('./utils/propertyUtils'); // Adjust the path if necessary
-const emailSender=require('./utils/sendEmail.js');
+const cron = require("node-cron");
+const { markPropertyAsRented } = require("./utils/propertyUtils"); // Adjust the path if necessary
+const emailSender = require("./utils/sendEmail.js");
 const faqRoutes = require("./routes/FAQroutes.js");
 const pricingRoutes = require("./routes/pricingRoutes.js");
 
 const app = express();
 
 app.use(
-  cors(
-    {
+  cors({
     origin: process.env.CORS_ORIGIN,
     credentials: true,
-  }
-)
+  })
 );
 
 app.use(
@@ -45,7 +43,7 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.json()); // ← Ensure this is present to parse JSON bodies
 
-app.use(helmet())
+app.use(helmet());
 // *******Dont touch above **********
 
 // add your routes here import here, also add here
@@ -69,16 +67,19 @@ app.use("/api/v1/pricing", pricingRoutes);
 // error handler middleware
 app.use(errorHandler);
 
-cron.schedule('* * * * *', async () => {
-  console.log('Checking for properties to mark as rented...');
-  try {
-    await markPropertyAsRented();
-    console.log('Property statuses updated successfully.');
-  } catch (error) {
-    console.error('Error updating property statuses:', error);
-  }
-});
+// DO NOT DELETE COMMENTED CODE
+
+// cron.schedule('* * * * *', async () => {
+//   console.log('Checking for properties to mark as rented...');
+//   try {
+//     await markPropertyAsRented();
+//     console.log('Property statuses updated successfully.');
+//   } catch (error) {
+//     console.error('Error updating property statuses:', error);
+//   }
+// });
 // email sender
+
 app.use(emailSender);
 
 // *******Dont touch below **********

@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 // Centralized email transporter function
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
+    host: process.env.SMTP_HOST,
     port: 465,
     secure: true,
     auth: {
@@ -17,7 +17,7 @@ const createTransporter = () => {
 exports.sendEmail = async (mailOptions) => {
   const transporter = createTransporter();
   console.log(mailOptions);
-  return transporter.sendMail(mailOptions,(error, info) => {
+  return transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.log(error);
       res.status(400).send("Something went wrong.");

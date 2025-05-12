@@ -7,7 +7,7 @@ const submitData = (req, res) => {
     const { name, email, phone, msg, topic } = req.body;
 
     const transporter = nodemailer.createTransport({
-      host: "sg2plzcpnl508365.prod.sin2.secureserver.net",
+      host: process.env.SMTP_HOST,
       port: 465,
       auth: {
         user: process.env.SMTP_USER,

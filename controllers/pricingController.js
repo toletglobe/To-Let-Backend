@@ -9,9 +9,9 @@ const pricingSubmit = async (req, res) => {
       phoneNumber,
       email,
       stayingWith,
-      profession, 
-      college, 
-      company, 
+      profession,
+      college,
+      company,
       business,
       dateOfVisit,
       timeSlot,
@@ -19,15 +19,16 @@ const pricingSubmit = async (req, res) => {
     } = req.body;
 
     const formattedPropertyIds = comparePropertyIds?.length
-    ? comparePropertyIds.map((id, idx) => `#${idx + 1}: http://localhost:5173/property/${id}`).join("\n")
-    : "No properties selected.";
-  
+      ? comparePropertyIds
+          .map((id, idx) => `#${idx + 1}: https://toletglobe.in/property/${id}`)
+          .join("\n")
+      : "No properties selected.";
+
     // Nodemailer transporter
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      host: process.env.SMTP_HOST,
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -35,10 +36,10 @@ const pricingSubmit = async (req, res) => {
     });
 
     // Mail options
-    const mailOptions = {
+    let mailOptions = {
       from: {
         name: "ToLetGlobe Form",
-        address: process.env.GMAIL_USER,
+        address: process.env.SMTP_USER,
       },
       to: email, // send confirmation to user
       subject: `Enquiry Confirmation - ToLetGlobe`,
@@ -66,31 +67,63 @@ ToLetGlobe Team
       `,
     };
 
-    // Send email
+    // Send email to User
     await transporter.sendMail(mailOptions);
 
     // Save data to MongoDB
-    const formEntry = new Pricing({
-      firstName,
-      lastName,
-      phoneNumber,
-      email,
-      stayingWith,
-      profession,
-      college: profession === 'Student' ? college : undefined,
-      company: profession === 'Working Professional' ? company : undefined,
-      business: profession === 'Business' ? business : undefined,
-      dateOfVisit,
-      timeSlot,
-      comparePropertyIds, // Save to DB if desired
-    });
+    // const formEntry = new Pricing({
+    //   firstName,
+    //   lastName,
+    //   phoneNumber,
+    //   email,
+    //   stayingWith,
+    //   profession,
+    //   college: profession === "Student" ? college : undefined,
+    //   company: profession === "Working Professional" ? company : undefined,
+    //   business: profession === "Business" ? business : undefined,
+    //   dateOfVisit,
+    //   timeSlot,
+    //   comparePropertyIds, // Save to DB if desired
+    // });
 
-    await formEntry.save();
+    // await formEntry.save();
+
+    mailOptions = {
+      from: {
+        name: "ToLetGlobe Form",
+        address: process.env.SMTP_USER,
+      },
+      to: process.env.SMTP_USER, // send confirmation to user
+      subject: `Enquiry Confirmation - ToLetGlobe`,
+      text: `
+${firstName} ${lastName} has submiited an enquiry. We have received the following details:
+
+First Name: ${firstName}
+Last Name: ${lastName}
+Email: ${email}
+Phone Number: ${phoneNumber}
+Staying With: ${stayingWith}
+Profession: ${profession}
+Date of Visit: ${dateOfVisit}
+Time Slot: ${timeSlot}
+
+Compared Property IDs:
+${formattedPropertyIds}
+
+Best regards,
+ToLetGlobe Team
+      `,
+    };
+
+    // Send email to Backend Team
+    await transporter.sendMail(mailOptions);
 
     res.status(200).send({ msg: "Form submitted successfully." });
   } catch (error) {
     console.error("Error sending mail or saving form:", error);
-    res.status(500).send({ msg: "Server error. Could not send email or save form." });
+    res
+      .status(500)
+      .send({ msg: "Server error. Could not send email or save form." });
   }
 };
 

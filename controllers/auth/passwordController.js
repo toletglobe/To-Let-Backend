@@ -111,7 +111,10 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     await sendEmail(mailOptions);
     res
       .status(200)
-      .json({ message: "Password reset link has been sent to your email." });
+      .json({
+        message:
+          "Password reset link has been sent to your email. It may take a couple of minutes for the email to reach you!",
+      });
   } catch (error) {
     return next(
       new ApiError(
