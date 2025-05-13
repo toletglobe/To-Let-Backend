@@ -22,14 +22,12 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     answer,
   } = req.body;
 
-  console.log("SIGNUP ATTEMPT FOR EMAIL:", email);
-
   // Check if user already exists
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
     return res
-      .status(200)
+      .status(201)
       .json({ message: "A user with this email already exists." });
   }
 
@@ -61,11 +59,12 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   } catch (err) {
     console.error("Email send failed:", err.message);
 
-    return res.status(200).json({
+    return res.status(201).json({
       message: "Failed to send verification email. Please try again.",
     });
   }
 });
+
 // User Signin
 exports.userSignin = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -80,16 +79,26 @@ exports.userSignin = asyncHandler(async (req, res, next) => {
   console.log("FOUND USER:", user);
 
   if (!user) {
-    return next(new ApiError(400, "User not found."));
+    return res.status(201).json({
+      message: "No user found with this email. Please sign up.",
+    });
+    // return next(new ApiError(400, "User not found."));
   }
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
-    return next(new ApiError(401, "Invalid credentials."));
+    return res.status(201).json({
+      message: "Invalid credentials. Please try again.",
+    });
+    // return next(new ApiError(401, "Invalid credentials."));
   }
 
   if (!user.isVerified) {
-    return next(new ApiError(403, "Please verify your account first."));
+    return res.status(201).json({
+      message:
+        "Please verify your account first with link shared in your email.",
+    });
+    // return next(new ApiError(403, "Please verify your account first."));
   }
 
   sendToken(user, 200, res);
