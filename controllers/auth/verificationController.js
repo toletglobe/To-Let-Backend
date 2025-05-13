@@ -45,7 +45,10 @@ exports.verifyAccount = asyncHandler(async (req, res, next) => {
   });
 
   if (!user) {
-    return next(new ApiError(400, "Invalid or expired verification token."));
+    console.log("Invalid or expired token");
+    return res
+      .status(200)
+      .json({ message: "Invalid or expired verification token." });
   }
 
   user.isVerified = true;

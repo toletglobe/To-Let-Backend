@@ -16,7 +16,7 @@ const sendEmail = async (email, verificationToken) => {
   });
 
   console.log("token:--" + verificationToken);
-  const verificationUrl = `http://localhost:5173/verify/${verificationToken}`;
+  const verificationUrl = `${process.env.CLIENT_URL}/verify/${verificationToken}`;
 
   const mailOptions = {
     from: `"To-Let Globe" <${process.env.SMTP_USER}>`,

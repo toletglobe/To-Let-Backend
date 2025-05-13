@@ -22,10 +22,15 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     answer,
   } = req.body;
 
+  console.log("SIGNUP ATTEMPT FOR EMAIL:", email);
+
   // Check if user already exists
   const existingUser = await User.findOne({ email });
+
   if (existingUser) {
-    return next(new ApiError(400, "A user with this email already exists."));
+    return res
+      .status(200)
+      .json({ message: "A user with this email already exists." });
   }
 
   // Generate email verification token
@@ -52,12 +57,13 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   // Send verification email
   try {
     await sendEmail(email, verificationToken);
-    res.status(200).json({ message: "Verification email sent!" });
+    return res.status(200).json({ message: "Verification email sent!" });
   } catch (err) {
     console.error("Email send failed:", err.message);
-    return next(
-      new ApiError(500, "Failed to send verification email. Please try again.")
-    );
+
+    return res.status(200).json({
+      message: "Failed to send verification email. Please try again.",
+    });
   }
 });
 // User Signin
