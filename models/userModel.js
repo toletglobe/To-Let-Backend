@@ -114,6 +114,12 @@ const UserSchema = new mongoose.Schema(
     profilePicture: {
       type: String,
     },
+    verificationToken: {
+      type: String,
+    },
+    verificationTokenExpires: {
+      type: Date,
+    },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

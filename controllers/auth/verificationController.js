@@ -32,27 +32,29 @@ exports.accountSecurity = asyncHandler(async (req, res, next) => {
 });
 
 exports.verifyAccount = asyncHandler(async (req, res, next) => {
-  const { id } = req.params;
+  const { token } = req.params;
 
-  // Find the user by ID
-  const user = await User.findById(id);
-  if (!user) {
-    return next(
-      new ApiError(404, "Invalid verification link or user does not exist.")
-    );
+  if (!token) {
+    return next(new ApiError(400, "Verification token is missing."));
   }
 
-  // Check if the account is already verified
-  if (user.isVerified) {
+  const user = await User.findOne({
+    verificationToken: token,
+    isVerified: false,
+    verificationTokenExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    console.log("Invalid or expired token");
     return res
       .status(200)
-      .json({ message: "Your account is already verified." });
+      .json({ message: "Invalid or expired verification token." });
   }
 
-  // Mark the account as verified
   user.isVerified = true;
+  user.verificationToken = undefined;
+  user.verificationTokenExpires = undefined;
   await user.save();
-  res
-    .status(200)
-    .json({ message: "Account verified successfully! You can now log in." });
+
+  res.status(200).json({ message: "Account verified successfully!" });
 });
