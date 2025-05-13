@@ -8,16 +8,12 @@ const { ApiError } = require("../../utils/ApiError");
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const { email, answer } = req.body;
 
-  if (!email || !answer) {
-    return next(
-      new ApiError(400, "Please provide both email and firstSchool.")
-    );
-  }
-
   const user = await User.findOne({ email, firstSchool: answer });
 
   if (!user) {
-    return next(new ApiError(404, "User not found or incorrect firstSchool."));
+    return res.status(201).json({
+      message: "User not found or incorrect first school.",
+    });
   }
 
   const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -109,12 +105,10 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
   try {
     await sendEmail(mailOptions);
-    res
-      .status(200)
-      .json({
-        message:
-          "Password reset link has been sent to your email. It may take a couple of minutes for the email to reach you!",
-      });
+    res.status(200).json({
+      message:
+        "Password reset link has been sent to your email. It may take a couple of minutes for the email to reach you!",
+    });
   } catch (error) {
     return next(
       new ApiError(
