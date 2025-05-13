@@ -69,7 +69,7 @@ const blogDetails = async (req, res) => {
 
 const updateLikes = async (req, res, next) => {
   console.log(req.params);
-  const blog = await Blog.findOne({ slug: req.params.id });
+  const blog = await Blog.findOne({ _id: req.params.id });
   const userId = req.userId;
   if (!blog) {
     return res.status(404).json({ success: false, message: "Blog not found" });
