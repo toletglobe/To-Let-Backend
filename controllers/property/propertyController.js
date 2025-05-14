@@ -89,6 +89,7 @@ const addProperty = async (req, res) => {
       uploadOnCloudinary(path)
     );
     const imgResults = await Promise.all(uploadPromises);
+    console.log("Image upload results:", imgResults); 
 
     // Handle any failed uploads
     const failedUploads = imgResults.filter((result) => !result);

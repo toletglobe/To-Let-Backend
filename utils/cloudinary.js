@@ -7,34 +7,42 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+/**
+ * Uploads a file to Cloudinary and returns the secure URL and public ID.
+ * Automatically deletes the local file after upload or error.
+ * @param {string} localFilePath - Path to the file stored locally (by multer).
+ * @returns {{ url: string, public_id: string } | null}
+ */
 const uploadOnCloudinary = async (localFilePath) => {
   try {
-    // console.log(process.env.CLOUDINARY_API_KEY);
-
     if (!localFilePath) {
-      console.log("No file path provided");
+      console.warn("uploadOnCloudinary: No file path provided");
       return null;
     }
-    console.log("Uploading file:", localFilePath);
 
-    // Upload the file to Cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto",
+    console.log("Uploading file to Cloudinary:", localFilePath);
+
+    const result = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto", // Automatically handles image/video
     });
 
-    // File has been uploaded successfully
-    console.log("File uploaded successfully:", response.url);
+    console.log("Upload successful:", result.secure_url);
 
-    // Remove the locally saved temporary file
+    // Cleanup local file
     fs.unlinkSync(localFilePath);
-    return response;
-  } catch (error) {
-    console.error("Cloudinary upload error:", error);
 
-    // Remove the locally saved temporary file in case of failure
+    return {
+      url: result.secure_url,
+      public_id: result.public_id,
+    };
+  } catch (error) {
+    console.error("Cloudinary upload failed:", error);
+
+    // Attempt to delete temp file if upload failed
     if (fs.existsSync(localFilePath)) {
       fs.unlinkSync(localFilePath);
     }
+
     return null;
   }
 };

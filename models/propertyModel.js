@@ -36,7 +36,6 @@ const PropertySchema = new Schema({
   },
   area: {
     type: String,
-    required: true,
   },
   address: {
     type: String,
@@ -50,7 +49,6 @@ const PropertySchema = new Schema({
   propertyType: {
     type: String,
     enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
-    required: true,
   },
   petsAllowed: {
     type: String,
@@ -92,7 +90,6 @@ const PropertySchema = new Schema({
     type: String,
     enum: ["AC", "Fan", "Cooler", "NA"],
     // enum: ["AC", "Fan", "Cooler", "NA"],
-    required: true,
   },
   carParking: {
     type: String,
@@ -101,11 +98,9 @@ const PropertySchema = new Schema({
   },
   rent: {
     type: String,
-    required: true,
   },
   security: {
     type: String,
-    required: true,
   },
   images: {
     type: [String],
@@ -136,6 +131,7 @@ const PropertySchema = new Schema({
   addressVerification: {
     type: String,
   },
+ 
   availabilityStatus: {
     type: String,
     default: "Available",
