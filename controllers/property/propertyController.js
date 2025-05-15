@@ -20,7 +20,7 @@ const addProperty = async (req, res) => {
       address,
       spaceType,
       propertyType,
-      petsAllowed,
+      // petsAllowed,
       preference,
       bachelors,
       type,
@@ -28,20 +28,24 @@ const addProperty = async (req, res) => {
       floor,
       nearestLandmark,
       typeOfWashroom,
-      coolingFacility,
-      carParking,
+      // coolingFacility,
+      // carParking,
       rent,
       security,
       images,
       videos, //adding videos
       squareFeetArea,
-      locationLink,
+      // locationLink,
       appliances,
       amenities,
-      addressVerification,
+      // addressVerification,
       availabilityStatus,
       aboutTheProperty,
+      latitude,
+      longitude,
     } = req.body;
+
+    console.log("Recieved Data:", req.body);
 
     const resolvedPincode = pincode || getPincode(city, locality);
 
@@ -89,7 +93,7 @@ const addProperty = async (req, res) => {
       uploadOnCloudinary(path)
     );
     const imgResults = await Promise.all(uploadPromises);
-    console.log("Image upload results:", imgResults); 
+    console.log("Image upload results:", imgResults);
 
     // Handle any failed uploads
     const failedUploads = imgResults.filter((result) => !result);
@@ -140,7 +144,7 @@ const addProperty = async (req, res) => {
       address,
       spaceType,
       propertyType,
-      petsAllowed,
+      // petsAllowed,
       preference,
       bachelors,
       type,
@@ -148,19 +152,21 @@ const addProperty = async (req, res) => {
       floor,
       nearestLandmark,
       typeOfWashroom,
-      coolingFacility,
-      carParking,
+      // coolingFacility,
+      // carParking,
       rent: formattedRent,
       security: formattedSecurity,
       images: imageUrls, // Changed photos to
       videos: videoUrls, // adding videos
       squareFeetArea: formattedSquareFeetArea,
-      locationLink,
+      // locationLink,
       appliances,
       amenities,
-      addressVerification,
+      // addressVerification,
       availabilityStatus,
       aboutTheProperty,
+      latitude,
+      longitude,
     };
 
     // Save property to the database

@@ -50,10 +50,10 @@ const PropertySchema = new Schema({
     type: String,
     enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
   },
-  petsAllowed: {
-    type: String,
-    enum: ["Yes", "No", "NA"],
-  },
+  // petsAllowed: {
+  //   type: String,
+  //   enum: ["Yes", "No", "NA"],
+  // },
   preference: {
     type: String,
     enum: ["Bachelors", "Family", "Any", "NA"],
@@ -83,19 +83,16 @@ const PropertySchema = new Schema({
   typeOfWashroom: {
     type: String,
     enum: ["Western", "Indian", "Both", "NA"],
-    // enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
-  coolingFacility: {
-    type: String,
-    enum: ["AC", "Fan", "Cooler", "NA"],
-    // enum: ["AC", "Fan", "Cooler", "NA"],
-  },
-  carParking: {
-    type: String,
-    // enum: ["Yes", "No", "NA","NA "],
-    required: true,
-  },
+  // coolingFacility: {
+  //   type: String,
+  //   enum: ["AC", "Fan", "Cooler", "NA"],
+  // },
+  // carParking: {
+  //   type: String,
+  //   required: true,
+  // },
   rent: {
     type: String,
   },
@@ -125,18 +122,24 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
-  locationLink: {
-    type: String,
-  },
-  addressVerification: {
-    type: String,
-  },
- 
+  // locationLink: {
+  //   type: String,
+  // },
+  // addressVerification: {
+  //   type: String,
+  // },
+
   availabilityStatus: {
     type: String,
     default: "Available",
     enum: ["Available", "Rented Out", "NA"],
     required: true,
+  },
+  latitude: {
+    type: String,
+  },
+  longitude: {
+    type: String,
   },
   slug: {
     type: String,
