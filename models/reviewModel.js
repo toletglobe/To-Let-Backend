@@ -22,23 +22,27 @@ const reviewSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  stayDuration: {
-    type: String,
-    required: true,
+  comments : {
+    type : String, 
+    required : true
   },
-  likesAboutLocality: {
-    type: String,
-    required: true,
-  },
-  dislikesAboutLocality: {
-    type: String,
-    required: true,
-  },
-  media: [
-    {
-      type: String,
-    },
-  ],
+  // stayDuration: {
+  //   type: String,
+  //   required: true,
+  // },
+  // likesAboutLocality: {
+  //   type: String,
+  //   required: true,
+  // },
+  // dislikesAboutLocality: {
+  //   type: String,
+  //   required: true,
+  // },
+  // media: [
+  //   {
+  //     type: String,
+  //   },
+  // ],
   createdAt: {
     type: Date,
     default: Date.now,
