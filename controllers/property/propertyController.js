@@ -43,6 +43,7 @@ const addProperty = async (req, res) => {
       aboutTheProperty,
       latitude,
       longitude,
+      subscriptionPlan,
     } = req.body;
 
     console.log("Recieved Data:", req.body);
@@ -167,6 +168,7 @@ const addProperty = async (req, res) => {
       aboutTheProperty,
       latitude,
       longitude,
+      subscriptionPlan,
     };
 
     // Save property to the database

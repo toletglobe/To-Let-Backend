@@ -141,6 +141,10 @@ const PropertySchema = new Schema({
   longitude: {
     type: String,
   },
+  subscriptionPlan: {
+    type: Number,
+    enum: [299, 499, 699, 999, 1499],
+  },
   slug: {
     type: String,
     unique: true,
