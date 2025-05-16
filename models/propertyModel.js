@@ -36,7 +36,6 @@ const PropertySchema = new Schema({
   },
   area: {
     type: String,
-    required: true,
   },
   address: {
     type: String,
@@ -50,12 +49,11 @@ const PropertySchema = new Schema({
   propertyType: {
     type: String,
     enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
-    required: true,
   },
-  petsAllowed: {
-    type: String,
-    enum: ["Yes", "No", "NA"],
-  },
+  // petsAllowed: {
+  //   type: String,
+  //   enum: ["Yes", "No", "NA"],
+  // },
   preference: {
     type: String,
     enum: ["Bachelors", "Family", "Any", "NA"],
@@ -85,27 +83,21 @@ const PropertySchema = new Schema({
   typeOfWashroom: {
     type: String,
     enum: ["Western", "Indian", "Both", "NA"],
-    // enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
-  coolingFacility: {
-    type: String,
-    enum: ["AC", "Fan", "Cooler", "NA"],
-    // enum: ["AC", "Fan", "Cooler", "NA"],
-    required: true,
-  },
-  carParking: {
-    type: String,
-    // enum: ["Yes", "No", "NA","NA "],
-    required: true,
-  },
+  // coolingFacility: {
+  //   type: String,
+  //   enum: ["AC", "Fan", "Cooler", "NA"],
+  // },
+  // carParking: {
+  //   type: String,
+  //   required: true,
+  // },
   rent: {
     type: String,
-    required: true,
   },
   security: {
     type: String,
-    required: true,
   },
   images: {
     type: [String],
@@ -130,17 +122,28 @@ const PropertySchema = new Schema({
     type: String,
     required: true,
   },
-  locationLink: {
-    type: String,
-  },
-  addressVerification: {
-    type: String,
-  },
+  // locationLink: {
+  //   type: String,
+  // },
+  // addressVerification: {
+  //   type: String,
+  // },
+
   availabilityStatus: {
     type: String,
     default: "Available",
     enum: ["Available", "Rented Out", "NA"],
     required: true,
+  },
+  latitude: {
+    type: String,
+  },
+  longitude: {
+    type: String,
+  },
+  subscriptionPlan: {
+    type: Number,
+    enum: [299, 499, 699, 999, 1499],
   },
   slug: {
     type: String,

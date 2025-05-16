@@ -4,19 +4,19 @@ const { uploadOnCloudinary } = require("../utils/cloudinary");
 const Review = require("../models/reviewModel");
 
 // Set up storage configuration for Multer (Disk Storage)
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "uploads/");
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + path.extname(file.originalname)); 
+//   },
+// });
 
 // Initialize multer with disk storage
-const upload = multer({
-  storage
-});
+// const upload = multer({
+//   storage
+// });
 
 // Function to create a new review
 const createReview = async (req, res) => {
@@ -27,13 +27,11 @@ const createReview = async (req, res) => {
       firstName,
       lastName,
       userRating,
-      stayDuration,
-      likesAboutLocality,
-      dislikesAboutLocality,
+      comments
     } = req.body;
 
     // Get uploaded media files
-    const mediaFiles = req.files;
+    // const mediaFiles = req.files;
 
     // Validate required fields
     const requiredFields = [
@@ -41,9 +39,7 @@ const createReview = async (req, res) => {
       userId,
       firstName,
       userRating,
-      stayDuration,
-      likesAboutLocality,
-      dislikesAboutLocality,
+      comments
     ];
 
     if (requiredFields.some((field) => !field)) {
@@ -52,33 +48,32 @@ const createReview = async (req, res) => {
         .json({ message: "All required fields are missing" });
     }
 
-    // Upload media to Cloudinary
-    const uploadPromises = mediaFiles.map(
-      (file) => uploadOnCloudinary(file.path) 
-    );
+    
+    // // Upload media to Cloudinary
+    // const uploadPromises = mediaFiles.map(
+    //   (file) => uploadOnCloudinary(file.path) 
+    // );
 
-    const imgResults = await Promise.all(uploadPromises);
+    // const imgResults = await Promise.all(uploadPromises);
 
     // Handle any failed uploads
-    const failedUploads = imgResults.filter((result) => !result);
-    if (failedUploads.length > 0) {
-      return res.status(400).json({ message: "Failed to upload some images" });
-    }
+    // const failedUploads = imgResults.filter((result) => !result);
+    // if (failedUploads.length > 0) {
+    //   return res.status(400).json({ message: "Failed to upload some images" });
+    // }
 
     // Get Cloudinary URLs after successful uploads
-    const imageUrls = imgResults.map((result) => result.secure_url); // Cloudinary URLs
+    // const imageUrls = imgResults.map((result) => result.secure_url); // Cloudinary URLs
 
     // Create new review document
+
     const newReview = new Review({
       property,
       userId,
       firstName,
       lastName,
       userRating: Number(userRating),
-      stayDuration,
-      likesAboutLocality,
-      dislikesAboutLocality,
-      media: imageUrls,
+      comments,
       createdAt: new Date(),
     });
 
@@ -132,6 +127,6 @@ const getAllReviews = async (req, res) => {
 };
 
 module.exports = {
-  createReview: [upload.array("media", 5), createReview],
+  createReview,
   getAllReviews,
 };
