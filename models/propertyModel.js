@@ -168,6 +168,7 @@ const PropertySchema = new Schema({
 // Pre-save hook to generate slug including BHK
 PropertySchema.pre("save", function (next) {
   if (
+    this.isModified("city") ||
     this.isModified("locality") ||
     this.isModified("propertyType") ||
     this.isModified("bhk")
