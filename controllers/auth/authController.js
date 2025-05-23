@@ -17,9 +17,9 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
-    role,
-    userType,
-    answer,
+    // role,
+    // userType,
+    // answer,
   } = req.body;
 
   // Check if user already exists
@@ -41,9 +41,6 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phoneNumber: phone,
-    role,
-    userType,
-    firstSchool: answer,
     isVerified: false,
     verificationToken,
     verificationTokenExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
@@ -52,6 +49,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
   // Save user
   await user.save();
 
+  console.log("user saved" + user)
   // Send verification email
   try {
     await sendEmail(email, verificationToken);
