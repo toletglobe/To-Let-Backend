@@ -13,6 +13,7 @@ const {
   getPropertiesByUserId,
   getPropertyByArea,
   updatePropertyAvailabilityStatus,
+  purchaseQuery
 } = require("../controllers/property/index.js");
 
 const upload = require("../middlewares/multer.js");
@@ -70,6 +71,7 @@ router.route("/:id").get(getPropertyById); //change names and methods according 
 // Get property by slug
 router.get("/slug/:slug", propertyBySlug);
 
+router.post("/purchasequery", purchaseQuery);
 // router.get("/city/:city", getPropertyByCity);
 
 // router.get("/city/:city/:locality/:area", getPropertyByArea); //http://localhost:8000/api/v1/property/city/Lucknow/Gomti Nagar/Vishesh Khand
@@ -86,17 +88,17 @@ router.route("/").delete(addProperty); //change names and methods according to y
 
 */
 // router.put("/:id/availability", async (req, res) => {
-//   try {
-//     // Find property by ID
-//     const property = await Property.findById(req.params.id);
+  //   try {
+    //     // Find property by ID
+    //     const property = await Property.findById(req.params.id);
 //     if (!property) {
-//       return res.status(404).json({ message: "Property not found" });
+  //       return res.status(404).json({ message: "Property not found" });
 //     }
 
 //     // Validate status
 //     const validStatuses = ["Available", "Rented Out", "NA"];
 //     if (!validStatuses.includes(req.body.availabilityStatus)) {
-//       return res.status(400).json({ message: "Invalid status" });
+  //       return res.status(400).json({ message: "Invalid status" });
 //     }
 
 //     // Update status directly
@@ -105,13 +107,13 @@ router.route("/").delete(addProperty); //change names and methods according to y
 
 //     res.json(property);
 //   } catch (error) {
-//     res.status(500).json({ message: error.message });
+  //     res.status(500).json({ message: error.message });
 //   }
 // });
 router.put("/:id/availability", async (req, res) => {
   try {
     console.log("Request received to update availability status", req.body);
-
+    
     const property = await Property.findById(req.params.id);
     if (!property) {
       console.log("Property not found for ID:", req.params.id);
@@ -123,7 +125,7 @@ router.put("/:id/availability", async (req, res) => {
       console.log("Invalid status received:", req.body.availabilityStatus);
       return res.status(400).json({ message: "Invalid status" });
     }
-
+    
     property.availabilityStatus = req.body.availabilityStatus;
     await property.save();
     console.log("Property status updated successfully:", property);
