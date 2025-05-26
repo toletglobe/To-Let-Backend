@@ -30,7 +30,7 @@ const pricingSubmit = async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: process.env.SMTP_USER,
+        user: "sales@toletglobe.in",
         pass: process.env.SMTP_PASS,
       },
     });
@@ -39,7 +39,7 @@ const pricingSubmit = async (req, res) => {
     let mailOptions = {
       from: {
         name: "ToLetGlobe Form",
-        address: process.env.SMTP_USER,
+        address: "sales@toletglobe.in",
       },
       to: email, // send confirmation to user
       subject: `Enquiry Confirmation - ToLetGlobe`,
@@ -91,9 +91,9 @@ ToLetGlobe Team
     mailOptions = {
       from: {
         name: "ToLetGlobe Form",
-        address: process.env.SMTP_USER,
+        address: "sales@toletglobe.in",
       },
-      to: process.env.SMTP_USER, // send confirmation to user
+      to: "sales@toletglobe.in", // send confirmation to user
       subject: `Enquiry Confirmation - ToLetGlobe`,
       text: `
 ${firstName} ${lastName} has submiited an enquiry. We have received the following details:
