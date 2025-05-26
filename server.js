@@ -16,7 +16,6 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const { errorHandler } = require("./middlewares/errorHandler.js");
 const cron = require("node-cron");
 const { markPropertyAsRented } = require("./utils/propertyUtils"); // Adjust the path if necessary
-const emailSender = require("./utils/sendEmail.js");
 const faqRoutes = require("./routes/FAQroutes.js");
 const pricingRoutes = require("./routes/pricingRoutes.js");
 
@@ -78,9 +77,6 @@ app.use(errorHandler);
 //     console.error('Error updating property statuses:', error);
 //   }
 // });
-// email sender
-
-app.use(emailSender);
 
 // *******Dont touch below **********
 connectDB()
