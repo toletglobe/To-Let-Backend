@@ -57,7 +57,6 @@ const UserSchema = new mongoose.Schema(
     // Role field - must be one of the defined roles
     role: {
       type: String,
-      required: true,
       enum: {
         values: USER_ROLES,
         message: "{VALUE} is not a valid user role",
