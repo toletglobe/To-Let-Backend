@@ -15,7 +15,6 @@ const sendEmail = async (email, verificationToken) => {
     secure: true,
   });
 
-  console.log("token:--" + verificationToken);
   const verificationUrl = `${process.env.CLIENT_URL}/verify/${verificationToken}`;
 
   const mailOptions = {
