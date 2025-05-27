@@ -6,9 +6,9 @@ const { sendToken } = require("../../utils/sendToken");
 const { ApiError } = require("../../utils/ApiError");
 
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
-  const { email, answer } = req.body;
+  const { email } = req.body;
 
-  const user = await User.findOne({ email, firstSchool: answer });
+  const user = await User.findOne({ email });
 
   if (!user) {
     return res.status(201).json({
