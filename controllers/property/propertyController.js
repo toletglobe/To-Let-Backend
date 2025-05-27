@@ -246,6 +246,7 @@ const updateProperty = async (req, res) => {
         .json({ message: "Pincode not found for provided city and locality." });
     }
     // Update the property fields
+    property.pincode = fetchedPincode ?? property.pincode; //update pincode
     property.firstName = firstName ?? property.firstName;
     property.lastName = lastName ?? property.lastName;
     property.ownersContactNumber =
