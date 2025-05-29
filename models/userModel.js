@@ -62,7 +62,7 @@ const UserSchema = new mongoose.Schema(
         message: "{VALUE} is not a valid user role",
       },
       default: "user",
-      index: true, // If filtering users by role often
+
     },
 
     // User type field - must be one of the defined types
@@ -72,7 +72,7 @@ const UserSchema = new mongoose.Schema(
         values: USER_TYPE,
         message: "{VALUE} is not a valid user type",
       },
-      index: true, // Indexed if filtering users by type frequently
+
     },
 
     // Verification status - defaults to false
@@ -85,7 +85,6 @@ const UserSchema = new mongoose.Schema(
     // Security question for password recovery
     firstSchool: {
       type: String,
-      required: true,
     },
 
     // Fields for password reset functionality
