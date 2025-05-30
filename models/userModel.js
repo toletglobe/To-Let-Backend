@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 
 // Define user roles and user types
 const USER_ROLES = ["admin", "content creator", "user"];
-const USER_TYPE = ["buyer", "tenant", "owner"];
+// const USER_TYPE = ["buyer", "tenant", "owner"];
 
 // Define the User schema
 const UserSchema = new mongoose.Schema(
@@ -65,6 +65,7 @@ const UserSchema = new mongoose.Schema(
 
     },
 
+
     // User type field - must be one of the defined types
     userType: {
       type: String,
@@ -75,6 +76,7 @@ const UserSchema = new mongoose.Schema(
 
     },
 
+
     // Verification status - defaults to false
     isVerified: {
       type: Boolean,
@@ -82,11 +84,12 @@ const UserSchema = new mongoose.Schema(
       index: true, // Helps optimize verified user queries
     },
 
+
     // Security question for password recovery
     firstSchool: {
       type: String,
     },
-
+    
     // Fields for password reset functionality
     resetPasswordToken: {
       type: String,

@@ -17,9 +17,9 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
-    role,
-    userType,
-    answer,
+    // role,
+    // userType,
+    // answer,
   } = req.body;
 
   // Check if user already exists
@@ -41,9 +41,10 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phoneNumber: phone,
-    role,
-    userType,
-    firstSchool: answer,
+    role: "user", // Default role, can be changed later
+    // role,
+    // userType,
+    // firstSchool: answer,
     isVerified: false,
     verificationToken,
     verificationTokenExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
