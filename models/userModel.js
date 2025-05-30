@@ -55,16 +55,9 @@ const UserSchema = new mongoose.Schema(
     },
 
     // Role field - must be one of the defined roles
-    role: {
-      type: String,
-      required: true,
-      enum: {
-        values: USER_ROLES,
-        message: "{VALUE} is not a valid user role",
-      },
-      default: "user",
-      index: true, // If filtering users by role often
-    },
+    
+
+
 
     // Verification status - defaults to false
     isVerified: {
@@ -73,6 +66,12 @@ const UserSchema = new mongoose.Schema(
       index: true, // Helps optimize verified user queries
     },
 
+
+    // Security question for password recovery
+    firstSchool: {
+      type: String,
+    },
+    
     // Fields for password reset functionality
     resetPasswordToken: {
       type: String,
