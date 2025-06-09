@@ -40,7 +40,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
+    coupon: {
+      type: String,
+    },
     // Phone number field - must be exactly 10 digits
     phoneNumber: {
       type: String,

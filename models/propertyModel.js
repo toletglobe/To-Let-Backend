@@ -93,9 +93,6 @@ const PropertySchema = new Schema({
   //   type: String,
   //   required: true,
   // },
-  coupon: {
-    type: String,
-  },
   rent: {
     type: String,
   },
