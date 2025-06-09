@@ -50,14 +50,31 @@ const addProperty = async (req, res) => {
     } = req.body;
 
     console.log("Recieved Data:", req.body);
-
+ 
     const resolvedPincode = pincode || getPincode(city, locality);
 
-    if (!resolvedPincode) {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.coupon) {
+      return res.status(400).json({ message: "Coupon is already used." });
+    }
+
+    if (coupon !== process.env.propertyCoupon) {
+      return res.status(400).json({ message: "Coupons didn't match." });
+    }
+
+    user.coupon = coupon;
+
+       if (!resolvedPincode) {
       return res
         .status(400)
         .json({ message: "Pincode not found for provided city and locality." });
     }
+    
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
     // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
@@ -179,13 +196,14 @@ const addProperty = async (req, res) => {
 
     // Save property to the database
     const property = await Property.create(data);
-
+    
     if (!property) {
       return res
-        .status(500)
-        .json({ message: "Something went wrong while creating property" });
+      .status(500)
+      .json({ message: "Something went wrong while creating property" });
     }
-
+    
+    await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
       statusCode: 201,
