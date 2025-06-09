@@ -69,6 +69,12 @@ const addProperty = async (req, res) => {
 
     user.coupon = coupon;
 
+       if (!resolvedPincode) {
+      return res
+        .status(400)
+        .json({ message: "Pincode not found for provided city and locality." });
+    }
+    
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
     // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
