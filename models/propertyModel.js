@@ -96,6 +96,12 @@ const PropertySchema = new Schema({
   rent: {
     type: String,
   },
+  minRent: {
+    type: String,
+  },
+  maxRent: {
+    type: String,
+  },
   security: {
     type: String,
   },

@@ -189,3 +189,21 @@ exports.removeFromFavourites = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+exports.checkUserCouponUsage = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    console.log("Checking coupon usage for user:", userId);
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ result: user.couponUsed });
+  } catch (error) {
+    console.error("Error checking coupon usage:", error);
+    throw error;
+  }
+};

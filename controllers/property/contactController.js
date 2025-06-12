@@ -11,8 +11,9 @@ const sanitizeInput = (input, maxLength = 1000) => {
 
 // Helper function to validate email format
 const isValidEmail = (email) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
 };
+
 
 const purchaseQuery = async (req, res) => {
   try {
@@ -29,27 +30,26 @@ const purchaseQuery = async (req, res) => {
     }
 
     // Create transporter with modern settings
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com", 
-      port: 465,
-      secure: true, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: true
-      }
-    });
+     const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: 587,
+        secure: false,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+  
 
     // Generate a unique message ID for tracking
     const messageId = createHash('sha256')
       .update(`${Date.now()}${email}`)
       .digest('hex');
 
+      
     const mailOptions = {
-      from: `"Website Contact Form" <${process.env.SMTP_USER}>`,
-      to: process.env.SMTP_RECEIVER,
+      from: process.env.SMTP_USER,
+      to: process.env.SMTP_USER,
       replyTo: sanitizeInput(email), // So replies go to the user
       subject: `New enquiry from ${sanitizeInput(username, 50)}`,
       text: `
@@ -72,12 +72,14 @@ const purchaseQuery = async (req, res) => {
     };
 
     // Send email with async/await
-    const info = await transporter.sendMail(mailOptions);
-    
-    console.log(`Email sent: ${info.messageId}`);
-    res.status(200).json({ 
-      success: true,
-      message: "Thank you for your message! We'll get back to you soon."
+     transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        res.status(400).send("Something went wrong.");
+      } else {
+        console.log("Email sent: " + info.response);
+        res.status(200).send("Form submitted successfully!");
+      }
     });
 
   } catch (error) {
