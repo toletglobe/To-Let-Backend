@@ -96,6 +96,12 @@ const PropertySchema = new Schema({
   rent: {
     type: String,
   },
+  minRent: {
+    type: String,
+  },
+  maxRent: {
+    type: String,
+  },
   security: {
     type: String,
   },
@@ -128,14 +134,6 @@ const PropertySchema = new Schema({
   // addressVerification: {
   //   type: String,
   // },
-
-  maxRent:{
-      type: String,       
-  },
-
-  minRent:{
-      type: String,       
-  },
 
   availabilityStatus: {
     type: String,

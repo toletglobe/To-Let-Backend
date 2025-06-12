@@ -40,9 +40,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    coupon: {
-      type: String,
-    },
+
     // Phone number field - must be exactly 10 digits
     phoneNumber: {
       type: String,
@@ -57,9 +55,16 @@ const UserSchema = new mongoose.Schema(
     },
 
     // Role field - must be one of the defined roles
-    
-
-
+    role: {
+      type: String,
+      required: true,
+      enum: {
+        values: USER_ROLES,
+        message: "{VALUE} is not a valid user role",
+      },
+      default: "user",
+      index: true, // If filtering users by role often
+    },
 
     // Verification status - defaults to false
     isVerified: {
@@ -68,12 +73,6 @@ const UserSchema = new mongoose.Schema(
       index: true, // Helps optimize verified user queries
     },
 
-
-    // Security question for password recovery
-    firstSchool: {
-      type: String,
-    },
-    
     // Fields for password reset functionality
     resetPasswordToken: {
       type: String,
@@ -104,6 +103,10 @@ const UserSchema = new mongoose.Schema(
     },
     verificationTokenExpires: {
       type: Date,
+    },
+    couponUsed: {
+      type: Boolean,
+      default: false, // Indicates if the user has used a coupon
     },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields

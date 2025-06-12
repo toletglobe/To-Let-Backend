@@ -115,7 +115,8 @@ const getFilteredProperties = async (req, res) => {
       const houseTypes = houseType.split(",");
       filter.type = { $in: houseTypes };
     }
-    //getting data from data.json to validate the areas
+
+    // Getting data from data.json to validate the areas
     let validAreas = null;
     const dataFilePath = path.join(__dirname, "..", "..", "data.json");
     const rawData = fs.readFileSync(dataFilePath, "utf-8");
@@ -177,8 +178,14 @@ const getFilteredProperties = async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Fetch filtered properties from the database with pagination
-    const properties = await Property.find(filter).skip(skip).limit(limitNum);
+    // Fetch filtered properties from the database with sorting and pagination
+    const properties = await Property.find(filter)
+      .sort({
+        availabilityStatus: 1,
+        createdAt: -1,
+      })
+      .skip(skip)
+      .limit(limitNum);
 
     const total = await Property.find(filter).countDocuments(); // Total number of properties
     const totalPages = Math.ceil(total / limitNum);
@@ -230,6 +237,7 @@ const getPropertiesByStatus = async (req, res) => {
     });
   }
 };
+
 const propertyBySlug = asyncHandler(async (req, res, next) => {
   const property = await Property.findOne({ slug: req.params.slug });
   if (!property) {
