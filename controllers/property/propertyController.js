@@ -63,7 +63,7 @@ const addProperty = async (req, res) => {
       return res.status(400).json({ message: "Coupon is already used." });
     }
 
-    if (coupon !== process.env.propertyCoupon) {
+    if (coupon !== process.env.COUPON) {
       return res.status(400).json({ message: "Coupons didn't match." });
     }
 
