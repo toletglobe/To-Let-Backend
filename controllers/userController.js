@@ -191,7 +191,7 @@ exports.removeFromFavourites = async (req, res) => {
 };
 
 
-const VALID_COUPONS = ["tolet8764", "SAVE20", "DISCOUNT10"];
+const VALID_COUPONS = ["tolet8764", "TOLET2025", "DISCOUNT10"];
 
 exports.applyCoupon = async (req, res) => {
   const { userId, couponCode } = req.body;
