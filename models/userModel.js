@@ -104,9 +104,9 @@ const UserSchema = new mongoose.Schema(
     verificationTokenExpires: {
       type: Date,
     },
-    coupon: {
-      type: String
-    },
+     coupon: { type: String, default: "" },
+
+     couponUsed: { type: Boolean, default: false },
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

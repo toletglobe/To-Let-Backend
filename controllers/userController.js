@@ -190,20 +190,32 @@ exports.removeFromFavourites = async (req, res) => {
   }
 };
 
-exports.checkUserCouponUsage = async (req, res) => {
-  try {
-    const { userId } = req.body;
-    console.log("Checking coupon usage for user:", userId);
 
-    // Find the user by ID
+const VALID_COUPONS = ["tolet8764", "SAVE20", "DISCOUNT10"];
+
+exports.applyCoupon = async (req, res) => {
+  const { userId, couponCode } = req.body;
+
+  if (!VALID_COUPONS.includes(couponCode)) {
+    return res.status(400).json({ success: false, message: "Invalid coupon code." });
+  }
+
+  try {
     const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+
+    if (!user) return res.status(404).json({ success: false, message: "User noty found" });
+
+    if (user.couponUsed) {
+      return res.status(400).json({ success: false, message: "Coupon already used" });
     }
 
-    return res.status(200).json({ result: user.couponUsed });
-  } catch (error) {
-    console.error("Error checking coupon usage:", error);
-    throw error;
+    user.coupon = couponCode;
+    user.couponUsed = true;
+
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Coupon applied successfully", user });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
   }
 };
