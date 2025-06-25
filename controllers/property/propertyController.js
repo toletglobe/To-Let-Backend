@@ -5,6 +5,10 @@ const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
+const VALID_COUPONS = {
+      "TOLET2025": 1 // Can be used once
+    };
+
 const addProperty = async (req, res) => {
   try {
     const {
@@ -59,15 +63,26 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    if (user.coupon) {
-      return res.status(400).json({ message: "Coupon is already used." });
-    }
+   if (coupon) {
+      // Check if coupon is valid
+      if (!VALID_COUPONS.hasOwnProperty(coupon)) {
+        return res.status(400).json({ message: "Invalid coupon code." });
+      }
 
-    if (coupon !== process.env.COUPON) {
-      return res.status(400).json({ message: "Coupons didn't match." });
-    }
+      // Get current usage (default to 0 if not used before)
+      const currentUsage = user.couponUsage.get(coupon) || 0;
 
-    user.coupon = coupon;
+      // Check if user has exceeded usage limit
+      if (currentUsage >= VALID_COUPONS[coupon]) {
+        return res.status(400).json({ 
+          message: `This coupon has reached its maximum usage limit (${VALID_COUPONS[coupon]} time(s)).`
+        });
+      }
+
+      // Increment usage count
+      user.couponUsage.set(coupon, currentUsage + 1);
+    
+    }
 
        if (!resolvedPincode) {
       return res
