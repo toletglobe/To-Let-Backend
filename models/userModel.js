@@ -104,11 +104,17 @@ const UserSchema = new mongoose.Schema(
     verificationTokenExpires: {
       type: Date,
     },
+
+     coupon: { type: String, default: "" },
+
+     couponUsed: { type: Boolean, default: false },
+
     couponUsage: {
       type: Map,
       of: Number, // Stores usage count for each coupon
       default: {}
     },
+
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
