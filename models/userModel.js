@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const Schema = mongoose.Schema;
 
 // Define user roles and user types
 const USER_ROLES = ["admin", "content creator", "user"];
@@ -114,6 +115,12 @@ const UserSchema = new mongoose.Schema(
       of: Number, // Stores usage count for each coupon
       default: {}
     },
+    properties: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Property"
+  }
+],
 
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
