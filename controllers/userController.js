@@ -25,6 +25,7 @@ exports.getUserInfo = async (req, res) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       profilePicture: user.profilePicture,
+      properties:user.properties,
     };
 
     res.status(200).json(userData);
