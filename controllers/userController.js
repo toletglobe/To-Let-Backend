@@ -25,6 +25,7 @@ exports.getUserInfo = async (req, res) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       profilePicture: user.profilePicture,
+      properties:user.properties,
     };
 
     res.status(200).json(userData);
@@ -203,7 +204,7 @@ exports.applyCoupon = async (req, res) => {
   try {
     const user = await User.findById(userId);
 
-    if (!user) return res.status(404).json({ success: false, message: "User noty found" });
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
     if (user.couponUsed) {
       return res.status(400).json({ success: false, message: "Coupon already used" });

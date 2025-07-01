@@ -11,8 +11,9 @@ const VALID_COUPONS = {
 
 const addProperty = async (req, res) => {
   try {
+
     const {
-      userId,
+      userId = req.user.id,
       firstName,
       lastName,
       ownersContactNumber,
@@ -196,7 +197,9 @@ const addProperty = async (req, res) => {
       .status(500)
       .json({ message: "Something went wrong while creating property" });
     }
-    
+    await User.findByIdAndUpdate(userId, {
+      $push: { properties: property._id },
+    });
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
