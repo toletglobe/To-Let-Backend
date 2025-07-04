@@ -209,7 +209,7 @@ exports.applyCoupon = async (req, res) => {
     if (user.couponUsed) {
       return res.status(400).json({ success: false, message: "Coupon already used" });
     }
-
+    
     user.coupon = couponCode;
     user.couponUsed = true;
 
