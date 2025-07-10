@@ -6,14 +6,14 @@ const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
 const VALID_COUPONS = {
-      "TOLET2025": 1 // Can be used onced
+      "TOLET2025": 1 // Can be used once
     };
-
 
 const addProperty = async (req, res) => {
   try {
+
     const {
-      userId,
+      userId = req.user.id,
       firstName,
       lastName,
       ownersContactNumber,
@@ -35,7 +35,6 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
-      coupon,
       rent,
       security,
       minRent,
@@ -64,27 +63,7 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Validate coupon if provided
-    if (coupon) {
-      // Check if coupon is valid
-      if (!VALID_COUPONS.hasOwnProperty(coupon)) {
-        return res.status(400).json({ message: "Invalid coupon code." });
-      }
-
-      // Get current usage (default to 0 if not used before)
-      const currentUsage = user.couponUsage.get(coupon) || 0;
-
-      // Check if user has exceeded usage limit
-      if (currentUsage >= VALID_COUPONS[coupon]) {
-        return res.status(400).json({ 
-          message: `This coupon has reached its maximum usage limit (${VALID_COUPONS[coupon]} time(s)).`
-        });
-      }
-
-      // Increment usage count
-      user.couponUsage.set(coupon, currentUsage + 1);
-    
-    }
+   
 
        if (!resolvedPincode) {
       return res
@@ -123,13 +102,14 @@ const addProperty = async (req, res) => {
 
     // Cloudinary file upload logic for images
     // if (!req.files || !req.files.images || req.files.images.length === 0) {
-      //   return res.status(400).json({ message: "Image files are required" });
-      // }
-      
-  let imageUrls;
-  let videoUrls;
+    //   return res.status(400).json({ message: "Image files are required" });
+    // }
 
+    let imageUrls;
+    let videoUrls;
+    
 if (req.files || req.files.images || req.files.images.length !== 0) {
+ 
     const imageLocalPaths = req.files.images.map((file) => file.path);
     const uploadPromises = imageLocalPaths.map((path) =>
       uploadOnCloudinary(path)
@@ -196,7 +176,6 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
-      coupon,
       minRent,
       maxRent,
       rent: formattedRent,
@@ -223,7 +202,9 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       .status(500)
       .json({ message: "Something went wrong while creating property" });
     }
-    
+    await User.findByIdAndUpdate(userId, {
+      $push: { properties: property._id },
+    });
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
@@ -234,6 +215,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
+  
 };
 
 // Logic for updating properties
@@ -447,5 +429,5 @@ module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
-  updatePropertyAvailabilityStatus
+  updatePropertyAvailabilityStatus,
 };
