@@ -6,14 +6,14 @@ const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
 const VALID_COUPONS = {
-      "TOLET2025": 1 // Can be used once
+      "TOLET2025": 1 // Can be used onced
     };
+
 
 const addProperty = async (req, res) => {
   try {
-
     const {
-      userId = req.user.id,
+      userId,
       firstName,
       lastName,
       ownersContactNumber,
@@ -35,6 +35,7 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
+      coupon,
       rent,
       security,
       minRent,
@@ -63,7 +64,27 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-   
+    // Validate coupon if provided
+    if (coupon) {
+      // Check if coupon is valid
+      if (!VALID_COUPONS.hasOwnProperty(coupon)) {
+        return res.status(400).json({ message: "Invalid coupon code." });
+      }
+
+      // Get current usage (default to 0 if not used before)
+      const currentUsage = user.couponUsage.get(coupon) || 0;
+
+      // Check if user has exceeded usage limit
+      if (currentUsage >= VALID_COUPONS[coupon]) {
+        return res.status(400).json({ 
+          message: `This coupon has reached its maximum usage limit (${VALID_COUPONS[coupon]} time(s)).`
+        });
+      }
+
+      // Increment usage count
+      user.couponUsage.set(coupon, currentUsage + 1);
+    
+    }
 
        if (!resolvedPincode) {
       return res
@@ -101,10 +122,14 @@ const addProperty = async (req, res) => {
       : Number(squareFeetArea);
 
     // Cloudinary file upload logic for images
-    if (!req.files || !req.files.images || req.files.images.length === 0) {
-      return res.status(400).json({ message: "Image files are required" });
-    }
+    // if (!req.files || !req.files.images || req.files.images.length === 0) {
+      //   return res.status(400).json({ message: "Image files are required" });
+      // }
+      
+  let imageUrls;
+  let videoUrls;
 
+if (req.files || req.files.images || req.files.images.length !== 0) {
     const imageLocalPaths = req.files.images.map((file) => file.path);
     const uploadPromises = imageLocalPaths.map((path) =>
       uploadOnCloudinary(path)
@@ -118,10 +143,10 @@ const addProperty = async (req, res) => {
       return res.status(400).json({ message: "Failed to upload some images" });
     }
 
-    const imageUrls = imgResults.map((result) => result.url);
+    imageUrls = imgResults.map((result) => result.url);
 
     // Cloudinary file upload logic for videos
-    let videoUrls = null;
+    videoUrls = null;
 
     if (!req.files.videos || req.files.videos.length === 0) {
       // return res.status(400).json({ message: "Video files are required" });
@@ -146,7 +171,7 @@ const addProperty = async (req, res) => {
 
       videoUrls = videoResults.map((result) => result.url);
     }
-
+  }
     // Create property data object
     const data = {
       userId,
@@ -171,6 +196,7 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
+      coupon,
       minRent,
       maxRent,
       rent: formattedRent,
@@ -197,9 +223,7 @@ const addProperty = async (req, res) => {
       .status(500)
       .json({ message: "Something went wrong while creating property" });
     }
-    await User.findByIdAndUpdate(userId, {
-      $push: { properties: property._id },
-    });
+    
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
@@ -423,5 +447,5 @@ module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
-  updatePropertyAvailabilityStatus,
+  updatePropertyAvailabilityStatus
 };

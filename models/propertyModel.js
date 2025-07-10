@@ -106,8 +106,7 @@ const PropertySchema = new Schema({
     type: String,
   },
   images: {
-    type: [String],
-    required: true,
+    type: [String]
   },
   videos: {
     type: [String],
