@@ -101,10 +101,15 @@ const addProperty = async (req, res) => {
       : Number(squareFeetArea);
 
     // Cloudinary file upload logic for images
-    if (!req.files || !req.files.images || req.files.images.length === 0) {
-      return res.status(400).json({ message: "Image files are required" });
-    }
+    // if (!req.files || !req.files.images || req.files.images.length === 0) {
+    //   return res.status(400).json({ message: "Image files are required" });
+    // }
 
+    let imageUrls;
+    let videoUrls;
+    
+if (req.files || req.files.images || req.files.images.length !== 0) {
+ 
     const imageLocalPaths = req.files.images.map((file) => file.path);
     const uploadPromises = imageLocalPaths.map((path) =>
       uploadOnCloudinary(path)
@@ -118,10 +123,10 @@ const addProperty = async (req, res) => {
       return res.status(400).json({ message: "Failed to upload some images" });
     }
 
-    const imageUrls = imgResults.map((result) => result.url);
+    imageUrls = imgResults.map((result) => result.url);
 
     // Cloudinary file upload logic for videos
-    let videoUrls = null;
+    videoUrls = null;
 
     if (!req.files.videos || req.files.videos.length === 0) {
       // return res.status(400).json({ message: "Video files are required" });
@@ -146,7 +151,7 @@ const addProperty = async (req, res) => {
 
       videoUrls = videoResults.map((result) => result.url);
     }
-
+  }
     // Create property data object
     const data = {
       userId,
@@ -210,6 +215,7 @@ const addProperty = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
+  
 };
 
 // Logic for updating properties
