@@ -11,9 +11,8 @@ const VALID_COUPONS = {
 
 const addProperty = async (req, res) => {
   try {
-
     const {
-      userId = req.user.id,
+      userId,
       firstName,
       lastName,
       ownersContactNumber,
@@ -35,6 +34,7 @@ const addProperty = async (req, res) => {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
+      coupon,
       rent,
       security,
       minRent,
@@ -51,6 +51,7 @@ const addProperty = async (req, res) => {
       latitude,
       longitude,
       subscriptionPlan,
+      couponStatus
     } = req.body;
 
     console.log("Recieved Data:", req.body);
@@ -63,9 +64,16 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-   
+    if(couponStatus === false || !coupon) return res
+        .status(400)
+        .json({ message: "Coupon not found. Enter the correct coupon" });
 
-       if (!resolvedPincode) {
+    if(coupon){
+    if (couponStatus === true && coupon) {
+      user.couponUsage.set(coupon, true); // Save actual coupon code
+    }
+  }
+    if (!resolvedPincode) {
       return res
         .status(400)
         .json({ message: "Pincode not found for provided city and locality." });
@@ -102,16 +110,15 @@ const addProperty = async (req, res) => {
 
     // Cloudinary file upload logic for images
     // if (!req.files || !req.files.images || req.files.images.length === 0) {
-    //   return res.status(400).json({ message: "Image files are required" });
-    // }
+      //   return res.status(400).json({ message: "Image files are required" });
+      // }
+      
+  let imageUrls;
+  let videoUrls;
 
-    let imageUrls;
-    let videoUrls;
-    
 if (req.files || req.files.images || req.files.images.length !== 0) {
- 
-    const imageLocalPaths = req.files.images.map((file) => file.path);
-    const uploadPromises = imageLocalPaths.map((path) =>
+    const imageLocalPaths = req.files?.images?.map((file) => file.path);
+    const uploadPromises = imageLocalPaths?.map((path) =>
       uploadOnCloudinary(path)
     );
     const imgResults = await Promise.all(uploadPromises);
@@ -123,7 +130,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       return res.status(400).json({ message: "Failed to upload some images" });
     }
 
-    imageUrls = imgResults.map((result) => result.url);
+    imageUrls = imgResults?.map((result) => result.url);
 
     // Cloudinary file upload logic for videos
     videoUrls = null;
@@ -133,10 +140,10 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       console.log("No videos");
     } else {
       // Extract local paths for videos
-      const videoLocalPaths = req.files.videos.map((file) => file.path);
+      const videoLocalPaths = req.files?.videos?.map((file) => file.path);
 
       // Upload videos to Cloudinary
-      const uploadVideoPromises = videoLocalPaths.map((path) =>
+      const uploadVideoPromises = videoLocalPaths?.map((path) =>
         uploadOnCloudinary(path)
       );
 
@@ -149,7 +156,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
           .json({ message: "Failed to upload some videos" });
       }
 
-      videoUrls = videoResults.map((result) => result.url);
+      videoUrls = videoResults?.map((result) => result.url);
     }
   }
     // Create property data object
@@ -176,6 +183,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       typeOfWashroom,
       // coolingFacility,
       // carParking,
+      coupon,
       minRent,
       maxRent,
       rent: formattedRent,
@@ -202,9 +210,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       .status(500)
       .json({ message: "Something went wrong while creating property" });
     }
-    await User.findByIdAndUpdate(userId, {
-      $push: { properties: property._id },
-    });
+    
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
@@ -215,7 +221,6 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
-  
 };
 
 // Logic for updating properties
