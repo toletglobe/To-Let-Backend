@@ -192,31 +192,47 @@ exports.removeFromFavourites = async (req, res) => {
 };
 
 
-const VALID_COUPONS = ["tolet8764", "TOLET2025", "DISCOUNT10"];
+const VALID_COUPONS = {
+  "TOLET2025": 1 // Can be used once
+};
 
-exports.applyCoupon = async (req, res) => {
-  const { userId, couponCode } = req.body;
-
-  if (!VALID_COUPONS.includes(couponCode)) {
-    return res.status(400).json({ success: false, message: "Invalid coupon code." });
-  }
-
+exports.checkUserCouponUsage = async (req, res) => {
   try {
+    const { userId, couponCode } = req.body;
+    console.log(req.body)
+    console.log(couponCode)
+    console.log("Checking coupon usage for user:", userId);
+
+    // Find the user by ID
     const user = await User.findById(userId);
-
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
-
-    if (user.couponUsed) {
-      return res.status(400).json({ success: false, message: "Coupon already used" });
+    console.log(user)
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-    
-    user.coupon = couponCode;
-    user.couponUsed = true;
 
-    await user.save();
+    // If just checking current coupon usage without validation
+    if (!couponCode) {
+      return res.status(200).json({ result: user.couponUsage });
+    }
 
-    res.status(200).json({ success: true, message: "Coupon applied successfully", user });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Server error", error: err.message });
+    // Validate coupon code
+    if (!VALID_COUPONS[couponCode]) {
+      return res.status(400).json({ message: "Invalid coupon code" });
+    }
+
+    // Check if coupon already used
+    if (user.coupons.get(couponCode)) {
+      return res.status(400).json({ message: "Coupon already used" });
+    }
+
+    // Coupon is valid and not used yet
+    return res.status(200).json({ 
+      valid: true,
+      message: "Coupon can be applied"
+    });
+
+  } catch (error) {
+    console.error("Error checking coupon usage:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

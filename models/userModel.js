@@ -119,15 +119,10 @@ const UserSchema = new mongoose.Schema(
     verificationTokenExpires: {
       type: Date,
     },
-
-     coupon: { type: String, default: "" },
-
-     couponUsed: { type: Boolean, default: false },
-
-    couponUsage: {
+    coupons : {
       type: Map,
-      of: Number, // Stores usage count for each coupon
-      default: {}
+      of: Boolean,
+      default: {},
     },
     properties: [
   {
