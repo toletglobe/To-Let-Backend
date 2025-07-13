@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const Pricing = require("../models/pricingModel");
-const Property = require("../models/propertyModel"); // adjust path as needed
-const User = require('../models/userModel'); 
+const Property = require("../models/propertyModel");
+const User = require('../models/userModel');
 
 const pricingSubmit = async (req, res) => {
   try {
@@ -17,82 +17,70 @@ const pricingSubmit = async (req, res) => {
       business,
       dateOfVisit,
       timeSlot,
-      comparePropertyIds, // <-- receive from frontend
+      comparePropertyIds,
     } = req.body;
 
     console.log(comparePropertyIds);
+
     let formattedPropertyDetails = "No properties selected.";
-    const allProps = await Property.find({}, '_id');
-    console.log("All available property IDs in DB:", allProps);
+    let formattedPropertyLinks = "No properties selected.";
+
     if (comparePropertyIds?.length) {
       const ids = Array.isArray(comparePropertyIds)
-      ? comparePropertyIds
-      : [comparePropertyIds];
+        ? comparePropertyIds
+        : [comparePropertyIds];
 
-    const selectedProperties = await Property.find({ _id: { $in: ids } });
+      const selectedProperties = await Property.find({ _id: { $in: ids } });
+      console.log("Fetched properties:", selectedProperties);
 
-    console.log("Fetched properties:", selectedProperties);
+      if (selectedProperties.length > 0) {
+        // Format for email to backend team (includes map)
+        formattedPropertyDetails = selectedProperties
+          .map((prop, idx) => {
+            const lat = prop.latitude;
+            const lng = prop.longitude;
+            const locationLink = lat && lng
+              ? `https://www.google.com/maps?q=${lat},${lng}`
+              : "N/A";
 
-    if (selectedProperties.length > 0) {
-    // Extract unique userIds from selected properties
-    //const userIds = [...new Set(selectedProperties.map(prop => String(prop.userId)))];
+            return `#${idx + 1}: https://tolet-globe.vercel.app/property/${prop._id}
+Owner Contact: ${prop.ownersContactNumber || "N/A"} 
+Location: ${locationLink}`;
+          })
+          .join("\n\n");
 
-    // Fetch users with their emails
-    //const users = await User.find({ _id: { $in: userIds } }, '_id email');
-
-    // Create a map of userId to email
-    //const userEmailMap = new Map(users.map(user => [String(user._id), user.email]));
-
-    // Format property details with email and Google Maps link
-    formattedPropertyDetails = selectedProperties
-      .map((prop, idx) => {
-        const lat = prop.latitude;
-        const lng = prop.longitude;
-        const locationLink = lat && lng
-          ? `https://www.google.com/maps?q=${lat},${lng}`
-          : "N/A";
-
-        //const email = userEmailMap.get(String(prop.userId)) || "N/A";
-
-        return `#${idx + 1}: https://toletglobe.in/property/${prop._id}
-  Owner Contact: ${prop.ownersContactNumber || "N/A"} 
-  Location: ${locationLink}`;
-      })
-      .join("\n\n");
-  }
-}
-    const formattedPropertyIds = comparePropertyIds?.length
-      ? comparePropertyIds
-          .map((id, idx) => `#${idx + 1}: https://toletglobe.in/property/${id}`)
-          .join("\n")
-      : "No properties selected.";
+        // Format for email to user (just links)
+        formattedPropertyLinks = selectedProperties
+          .map((prop, idx) => `#${idx + 1}: https://tolet-globe.vercel.app/property/${prop._id}`)
+          .join("\n");
+      }
+    }
 
     // Nodemailer transporter
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
+      host:"smtp.gmail.com",
       port: 465,
       secure: true,
       auth: {
-        user: "sales@toletglobe.in",
+        user: process.env.SMTP_USER,  // Changed from hardcoded to env variable
         pass: process.env.SMTP_PASS,
       },
     });
 
-    // Mail options
-    let mailOptions = {
+    // ===== Email to User =====
+    let userMailOptions = {
       from: {
-        name: "ToLetGlobe Form",
-        address: "sales@toletglobe.in",
+        name: "ToLetGlobe",
+        address: "sales@toletglobe.in",  // From sales@ for user email
       },
-      to: email, // send confirmation to user
-      subject: `Enquiry Confirmation - ToLetGlobe`,
+      to: email,
+      subject: "Thanks for your enquiry – ToLetGlobe",
       text: `
 Hi ${firstName} ${lastName},
 
-Thank you for your enquiry. We have received the following details:
+Thank you for reaching out to ToLetGlobe! We've received your enquiry with the following details:
 
-First Name: ${firstName}
-Last Name: ${lastName}
+Name: ${firstName} ${lastName}
 Email: ${email}
 Phone Number: ${phoneNumber}
 Staying With: ${stayingWith}
@@ -100,46 +88,28 @@ Profession: ${profession}
 Date of Visit: ${dateOfVisit}
 Time Slot: ${timeSlot}
 
-Compared Property IDs:
-${formattedPropertyIds}
+Here are the properties you're interested in:
+${formattedPropertyLinks}
 
-Our team will contact you shortly.
+Our team will be in touch with you shortly.
 
-Best regards,
+Warm regards,  
 ToLetGlobe Team
       `,
     };
 
-    // Send email to User
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(userMailOptions);
 
-    // Save data to MongoDB
-    // const formEntry = new Pricing({
-    //   firstName,
-    //   lastName,
-    //   phoneNumber,
-    //   email,
-    //   stayingWith,
-    //   profession,
-    //   college: profession === "Student" ? college : undefined,
-    //   company: profession === "Working Professional" ? company : undefined,
-    //   business: profession === "Business" ? business : undefined,
-    //   dateOfVisit,
-    //   timeSlot,
-    //   comparePropertyIds, // Save to DB if desired
-    // });
-
-    // await formEntry.save();
-
-    mailOptions = {
+    // ===== Email to Backend (Sales) =====
+    let backendMailOptions = {
       from: {
         name: "ToLetGlobe Form",
-        address: "sales@toletglobe.in",
+        address: process.env.SMTP_USER,  // From SMTP_USER for backend email
       },
-      to: "sales@toletglobe.in", // send confirmation to user
-      subject: `Enquiry Confirmation - ToLetGlobe`,
+      to: email,
+      subject: `New Enquiry Submitted – ${firstName} ${lastName}`,
       text: `
-${firstName} ${lastName} has submiited an enquiry. We have received the following details:
+${firstName} ${lastName} has submitted an enquiry. Details below:
 
 First Name: ${firstName}
 Last Name: ${lastName}
@@ -147,26 +117,28 @@ Email: ${email}
 Phone Number: ${phoneNumber}
 Staying With: ${stayingWith}
 Profession: ${profession}
+College: ${college || "N/A"}
+Company: ${company || "N/A"}
+Business: ${business || "N/A"}
 Date of Visit: ${dateOfVisit}
 Time Slot: ${timeSlot}
 
-Compared Property IDs:
+Compared Properties:
 ${formattedPropertyDetails}
 
-Best regards,
-ToLetGlobe Team
+Regards,  
+ToLetGlobe System
       `,
     };
 
-    // Send email to Backend Team
-    await transporter.sendMail(mailOptions);
+    await transporter.sendMail(backendMailOptions);
 
     res.status(200).send({ msg: "Form submitted successfully." });
   } catch (error) {
     console.error("Error sending mail or saving form:", error);
-    res
-      .status(500)
-      .send({ msg: "Server error. Could not send email or save form." });
+    res.status(500).send({
+      msg: "Server error. Could not send email or save form.",
+    });
   }
 };
 
