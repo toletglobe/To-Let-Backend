@@ -6,8 +6,9 @@ const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
 const VALID_COUPONS = {
-      "TOLET2025": 1 // Can be used once
+      "TOLET2025": 1 // Can be used onced
     };
+
 
 const addProperty = async (req, res) => {
   try {
@@ -50,7 +51,7 @@ const addProperty = async (req, res) => {
       aboutTheProperty,
       latitude,
       longitude,
-      subscriptionPlan,
+      subscriptionPlan = 0,
       couponStatus
     } = req.body;
 
@@ -62,17 +63,14 @@ const addProperty = async (req, res) => {
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
-    }
+    }       
 
-    if(couponStatus === false || !coupon) return res
-        .status(400)
+    if ((couponStatus === "true" || couponStatus === true) && coupon) {
+        user.coupons.set(coupon, true);
+    }else{
+       return res.status(400)
         .json({ message: "Coupon not found. Enter the correct coupon" });
-
-    if(coupon){
-    if (couponStatus === true && coupon) {
-      user.couponUsage.set(coupon, true); // Save actual coupon code
     }
-  }
     if (!resolvedPincode) {
       return res
         .status(400)
@@ -113,52 +111,42 @@ const addProperty = async (req, res) => {
       //   return res.status(400).json({ message: "Image files are required" });
       // }
       
-  let imageUrls;
-  let videoUrls;
+ let imageUrls;
+let videoUrls;
 
-if (req.files || req.files.images || req.files.images.length !== 0) {
-    const imageLocalPaths = req.files?.images?.map((file) => file.path);
-    const uploadPromises = imageLocalPaths?.map((path) =>
-      uploadOnCloudinary(path)
-    );
-    const imgResults = await Promise.all(uploadPromises);
-    console.log("Image upload results:", imgResults);
+// Upload images if present
+if (req.files?.images && req.files.images.length > 0) {
+  const imageLocalPaths = req.files.images.map((file) => file.path);
+  const uploadPromises = imageLocalPaths.map((path) =>
+    uploadOnCloudinary(path)
+  );
+  const imgResults = await Promise.all(uploadPromises);
 
-    // Handle any failed uploads
-    const failedUploads = imgResults.filter((result) => !result);
-    if (failedUploads.length > 0) {
-      return res.status(400).json({ message: "Failed to upload some images" });
-    }
-
-    imageUrls = imgResults?.map((result) => result.url);
-
-    // Cloudinary file upload logic for videos
-    videoUrls = null;
-
-    if (!req.files.videos || req.files.videos.length === 0) {
-      // return res.status(400).json({ message: "Video files are required" });
-      console.log("No videos");
-    } else {
-      // Extract local paths for videos
-      const videoLocalPaths = req.files?.videos?.map((file) => file.path);
-
-      // Upload videos to Cloudinary
-      const uploadVideoPromises = videoLocalPaths?.map((path) =>
-        uploadOnCloudinary(path)
-      );
-
-      const videoResults = await Promise.all(uploadVideoPromises);
-
-      const failedVideoUploads = videoResults.filter((result) => !result);
-      if (failedVideoUploads.length > 0) {
-        return res
-          .status(400)
-          .json({ message: "Failed to upload some videos" });
-      }
-
-      videoUrls = videoResults?.map((result) => result.url);
-    }
+  const failedUploads = imgResults.filter((result) => !result);
+  if (failedUploads.length > 0) {
+    return res.status(400).json({ message: "Failed to upload some images" });
   }
+
+  imageUrls = imgResults.map((result) => result.url);
+}
+
+// Upload videos if present
+if (req.files?.videos && req.files.videos.length > 0) {
+  const videoLocalPaths = req.files.videos.map((file) => file.path);
+  const uploadVideoPromises = videoLocalPaths.map((path) =>
+    uploadOnCloudinary(path)
+  );
+  const videoResults = await Promise.all(uploadVideoPromises);
+
+  const failedVideoUploads = videoResults.filter((result) => !result);
+  if (failedVideoUploads.length > 0) {
+    return res
+      .status(400)
+      .json({ message: "Failed to upload some videos" });
+  }
+
+  videoUrls = videoResults.map((result) => result.url);
+}
     // Create property data object
     const data = {
       userId,
@@ -199,7 +187,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       aboutTheProperty,
       latitude,
       longitude,
-      subscriptionPlan,
+      subscriptionPlan: Number(subscriptionPlan) || 0,
     };
 
     // Save property to the database
@@ -219,6 +207,7 @@ if (req.files || req.files.images || req.files.images.length !== 0) {
       msg: "Property registered successfully.",
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: error.message });
   }
 };
@@ -272,7 +261,7 @@ const updateProperty = async (req, res) => {
       carParking,
       locationLink,
     } = req.body;
-    //console.log(req.body);
+    console.log(req.body);
     const fetchedPincode = pincode;
     //|| getPincode(city, locality);
     if (!fetchedPincode) {
@@ -325,6 +314,7 @@ const updateProperty = async (req, res) => {
       message: "Property updated successfully.",
     });
   } catch (error) {
+    console.log(error)
     return res.status(500).json({ message: error.message });
   }
 };
@@ -434,5 +424,5 @@ module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
-  updatePropertyAvailabilityStatus,
+  updatePropertyAvailabilityStatus
 };

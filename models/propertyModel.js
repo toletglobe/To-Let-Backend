@@ -56,13 +56,11 @@ const PropertySchema = new Schema({
   // },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any", "NA"],
-    required: true,
+    enum: ["Bachelors", "Family", "Any", "NA"]
   },
   bachelors: {
     type: String,
-    enum: ["Girls", "Boys", "Any", "NA"],
-    required: true,
+    enum: ["Girls", "Boys", "Any", "NA"]
   },
   type: {
     type: String,
@@ -71,11 +69,9 @@ const PropertySchema = new Schema({
   },
   bhk: {
     type: String,
-    required: true,
   },
   floor: {
     type: String,
-    required: true,
   },
   nearestLandmark: {
     type: String,
@@ -112,8 +108,7 @@ const PropertySchema = new Schema({
     type: [String],
   },
   squareFeetArea: {
-    type: String,
-    required: true,
+    type: String
   },
   appliances: {
     type: [String],
@@ -148,7 +143,7 @@ const PropertySchema = new Schema({
   },
   subscriptionPlan: {
     type: Number,
-    enum: [299, 499, 699, 999, 1499],
+    enum: [ 0, 299, 499, 699, 999, 1499],
   },
   slug: {
     type: String,
