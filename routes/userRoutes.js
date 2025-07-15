@@ -11,7 +11,7 @@ const {
   addToFavourites,
   getFavourites,
   removeFromFavourites,
-  applyCoupon,
+  checkUserCouponUsage,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -72,7 +72,6 @@ router.post("/removeFromFavourites", authenticate, removeFromFavourites);
 // Other routes
 router.get("/info", authenticate, getUserInfo);
 router.put("/update", authenticate, updateUser);
-router.post("/apply-coupon", applyCoupon);
-
+router.post("/check-coupon-usage", authenticate, checkUserCouponUsage);
 
 module.exports = router;

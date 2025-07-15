@@ -53,9 +53,16 @@ router.get("/status", getPropertiesByStatus);
 // http://localhost:8000/api/v1/property?page=2&limit=5
 // router.route("/").get(GetProperty); //change names and methods according to your endpoints
 
-router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
-
-router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
+router
+  .route("/update-property/:id")
+  .patch(
+    upload.fields([
+      { name: "images", maxCount: 7 },   // Adjust the maxCount as needed
+      { name: "videos", maxCount: 7 },   // Optional, if you're uploading videos
+    ]),
+    updateProperty
+  );
+// router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
 router
   .route("/update-property-availability-status/:id")
   .patch(updatePropertyAvailabilityStatus);
