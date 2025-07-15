@@ -5,7 +5,7 @@ const User = require("../../models/userModel");
 const { asyncHandler } = require("../../utils/asyncHandler");
 const sendEmail = require("../../utils/sendEmail");
 const nodemailer = require("nodemailer");
-
+const { sendOTP } = require("../../utils/smsService");
 const { sendToken } = require("../../utils/sendToken");
 const { ApiError } = require("../../utils/ApiError");
 
@@ -17,9 +17,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
-    // role,
-    // userType,
-    // answer,
+    verificationMethod = 'email' // Default to email
   } = req.body;
 
   // Check if user already exists
@@ -30,40 +28,100 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
       .status(201)
       .json({ message: "A user with this email already exists." });
   }
-
-  // Generate email verification token
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-
-  // Create new user with token fields
+  
+  // Create new user
   const user = new User({
     firstName,
     lastName,
     email,
     password,
     phoneNumber: phone,
-    role: "user", // Default role, can be changed later
-    // role,
-    // userType,
-    // firstSchool: answer,
+    role: "user",
     isVerified: false,
-    verificationToken,
-    verificationTokenExpires: Date.now() + 10 * 60 * 1000, // 10 minutes
+    verificationMethod
   });
 
-  // Save user
-  await user.save();
+  // Handle verification based on method
+  if (verificationMethod === 'email') {
+    // Email verification logic
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    user.verificationToken = verificationToken;
+    user.verificationTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    
+    try {
+      await sendEmail(email, verificationToken);
+      await user.save();
+      return res.status(200).json({ 
+        message: "Verification email sent!",
+        verificationMethod: 'email'
+      });
+    } catch (err) {
+      console.error("Email send failed:", err.message);
+      return res.status(201).json({
+        message: "Failed to send verification email. Please try again.",
+      });
+    }
+  } else {
+    // SMS verification logic
+    
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    user.otp = otp;
+    user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    
+    
+    try {
+      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+      const smsSent = await sendOTP(formattedPhone, otp);
+      await user.save();
+      if (smsSent) {
+        return res.status(200).json({ 
+          message: "OTP sent to your phone!",
+          verificationMethod: 'sms'
+        });
+      } else {
+        return res.status(201).json({
+          message: "Failed to send OTP. Please try again.",
+        });
+      }
+    } catch (err) {
+      console.error("SMS send failed:", err.message);
+      return res.status(201).json({
+        message: "Failed to send OTP. Please try again.",
+      });
+    }
+  }
+});
 
-  // Send verification email
-  try {
-    await sendEmail(email, verificationToken);
-    return res.status(200).json({ message: "Verification email sent!" });
-  } catch (err) {
-    console.error("Email send failed:", err.message);
+// Add new OTP verification endpoint
+exports.verifyOTP = asyncHandler(async (req, res, next) => {
+  const { email, otp } = req.body;
 
-    return res.status(201).json({
-      message: "Failed to send verification email. Please try again.",
+  const user = await User.findOne({ 
+    email,
+    otp,
+    otpExpires: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(201).json({ 
+      message: "Invalid or expired OTP." 
     });
   }
+
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+  await user.save();
+
+  res.status(200).json({ 
+    message: "Phone number verified successfully!",
+    user: {
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    }
+  });
 });
 
 // User Signin

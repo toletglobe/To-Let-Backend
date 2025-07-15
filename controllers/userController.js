@@ -25,6 +25,7 @@ exports.getUserInfo = async (req, res) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       profilePicture: user.profilePicture,
+      properties:user.properties,
     };
 
     res.status(200).json(userData);
@@ -190,9 +191,16 @@ exports.removeFromFavourites = async (req, res) => {
   }
 };
 
+
+const VALID_COUPONS = {
+  "TOLET2025": 1 // Can be used once
+};
+
 exports.checkUserCouponUsage = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, couponCode } = req.body;
+    console.log(req.body)
+    console.log(couponCode)
     console.log("Checking coupon usage for user:", userId);
 
     // Find the user by ID
@@ -201,9 +209,29 @@ exports.checkUserCouponUsage = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.status(200).json({ result: user.couponUsed });
+    // If just checking current coupon usage without validation
+    if (!couponCode) {
+      return res.status(200).json({ result: user.couponUsage });
+    }
+
+    // Validate coupon code
+    if (!VALID_COUPONS[couponCode]) {
+      return res.status(400).json({ message: "Invalid coupon code" });
+    }
+
+    // Check if coupon already used
+    if (user.coupons.get(couponCode)) {
+      return res.status(400).json({ message: "Coupon already used" });
+    }
+
+    // Coupon is valid and not used yet
+    return res.status(200).json({ 
+      valid: true,
+      message: "Coupon can be applied"
+    });
+
   } catch (error) {
     console.error("Error checking coupon usage:", error);
-    throw error;
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

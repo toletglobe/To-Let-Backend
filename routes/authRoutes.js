@@ -5,6 +5,7 @@ const {
   userSignup,
   userSignin,
   accountSecurity,
+  verifyOTP,
 } = require("../controllers/auth/index");
 const {verifyAccount} = require("../controllers/auth/verificationController")
 const authenticate = require("../middlewares/authMiddleware");
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.post("/register", userSignup);
 router.post("/login", userSignin);
+router.post("/verify-otp",verifyOTP);
 router.get("/verify/:token", verifyAccount);
 router.post("/forgot-password", forgotPasswordLimiter,forgotPassword);  //Add a rate limiter to prevent brute force attacks
 router.post("/reset-password", resetPassword);
