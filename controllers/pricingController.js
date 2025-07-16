@@ -43,7 +43,7 @@ const pricingSubmit = async (req, res) => {
               ? `https://www.google.com/maps?q=${lat},${lng}`
               : "N/A";
 
-            return `#${idx + 1}: https://tolet-globe.vercel.app/property/${prop._id}
+            return `#${idx + 1}: https://toletglobe.in/property/${prop._id}
 Owner Contact: ${prop.ownersContactNumber || "N/A"} 
 Location: ${locationLink}`;
           })
@@ -51,7 +51,7 @@ Location: ${locationLink}`;
 
         // Format for email to user (just links)
         formattedPropertyLinks = selectedProperties
-          .map((prop, idx) => `#${idx + 1}: https://tolet-globe.vercel.app/property/${prop._id}`)
+          .map((prop, idx) => `#${idx + 1}: https://toletglobe.in/property/${prop._id}`)
           .join("\n");
       }
     }
