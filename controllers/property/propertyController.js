@@ -5,10 +5,6 @@ const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
-const VALID_COUPONS = {
-      "TOLET2025": 1 // Can be used onced
-    };
-
 
 const addProperty = async (req, res) => {
   try {
@@ -67,7 +63,8 @@ const addProperty = async (req, res) => {
 
     if ((couponStatus === "true" || couponStatus === true) && coupon) {
         user.coupons.set(coupon, true);
-    }else{
+    } 
+    else{
        return res.status(400)
         .json({ message: "Coupon not found. Enter the correct coupon" });
     }

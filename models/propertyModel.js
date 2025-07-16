@@ -110,14 +110,14 @@ const PropertySchema = new Schema({
   squareFeetArea: {
     type: String
   },
-  appliances: {
+  appliances:[ {
     type: [String],
     required: true,
-  },
-  amenities: {
+  }],
+  amenities: [{
     type: [String],
     required: true,
-  },
+  }],
   aboutTheProperty: {
     type: String,
     required: true,
