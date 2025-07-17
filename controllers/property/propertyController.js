@@ -61,13 +61,15 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }       
 
-    if ((couponStatus === "true" || couponStatus === true) && coupon) {
+      // Bypass coupon validation if user is admin
+    if (user.role !== "admin") {
+      if ((couponStatus === "true" || couponStatus === true) && coupon) {
         user.coupons.set(coupon, true);
-    } 
-    else{
-       return res.status(400)
-        .json({ message: "Coupon not found. Enter the correct coupon" });
+      } else {
+        return res.status(400).json({ message: "Coupon not found. Enter the correct coupon" });
+      }
     }
+    
     if (!resolvedPincode) {
       return res
         .status(400)
