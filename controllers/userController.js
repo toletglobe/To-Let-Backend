@@ -209,6 +209,13 @@ exports.checkUserCouponUsage = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // If the user is Admin then give coupon validity true
+    if(user.role === "admin"){
+      return res.status(200).json({ 
+        valid: true,
+        message: "Coupon Applied"
+      });
+    }
     // If just checking current coupon usage without validation
     if (!couponCode) {
       return res.status(200).json({ result: user.couponUsage });
@@ -227,7 +234,7 @@ exports.checkUserCouponUsage = async (req, res) => {
     // Coupon is valid and not used yet
     return res.status(200).json({ 
       valid: true,
-      message: "Coupon can be applied"
+      message: "Coupon Applied"
     });
 
   } catch (error) {
