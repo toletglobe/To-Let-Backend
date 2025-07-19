@@ -42,7 +42,7 @@ const pricingSubmit = async (req, res) => {
                 ? `https://www.google.com/maps?q=${lat},${lng}`
                 : "N/A";
 
-            return `#${idx + 1}: https://toletglobe.in/property/${prop._id}
+            return `#${idx + 1}: https://toletglobe.in/property/${prop.slug}
 Owner Contact: ${prop.ownersContactNumber || "N/A"} 
 Location: ${locationLink}`;
           })
@@ -52,7 +52,7 @@ Location: ${locationLink}`;
         formattedPropertyLinks = selectedProperties
           .map(
             (prop, idx) =>
-              `#${idx + 1}: https://toletglobe.in/property/${prop._id}`
+              `#${idx + 1}: https://toletglobe.in/property/${prop.slug}`
           )
           .join("\n");
       }
