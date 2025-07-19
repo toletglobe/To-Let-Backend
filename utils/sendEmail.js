@@ -26,7 +26,7 @@ const sendEmail = async (email, verificationToken) => {
   from: `"To-Let Globe" <${process.env.SMTP_USER}>`,
   to: email,
   replyTo: process.env.SMTP_USER,
-  subject: "Verify Your Email Address",
+  subject: "Verification code for logging Toletglobe.in",
   html: `
     <h2>Welcome to To-Let Globe 🎉</h2>
     <p>Hello ${email.split('@')[0]},</p>
