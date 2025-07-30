@@ -131,7 +131,34 @@ ToLetGlobe System
       `,
     };
 
-    await transporter.sendMail(backendMailOptions);
+    //saving to the google sheet
+     const formData = new URLSearchParams({
+      firstName,
+      lastName,
+      phoneNumber,
+      email,
+      stayingWith,
+      profession,
+      dateOfVisit,
+      slot,
+      college,
+      business,
+      timeSlot,
+      comparePropertyIds,
+      formattedPropertyLinks,
+      formattedPropertyDetails,
+    });
+
+    const response = await fetch('https://script.google.com/macros/s/AKfycbwmdy0tsU2sHBhCOUWVcXFBTJniy5yFA0Ku32g2Hy-pjZupFpoYxRv8bO3WV50KTHjUrQ/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData
+    });
+
+  const resultText = await response.text();
+  console.log('Google Sheet log:', resultText);
+
+  await transporter.sendMail(backendMailOptions);
 
     res.status(200).send({ msg: "Form submitted successfully." });
   } catch (error) {

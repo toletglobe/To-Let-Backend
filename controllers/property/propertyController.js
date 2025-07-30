@@ -5,7 +5,6 @@ const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 
-
 const addProperty = async (req, res) => {
   try {
     const {
@@ -48,34 +47,36 @@ const addProperty = async (req, res) => {
       latitude,
       longitude,
       subscriptionPlan = 0,
-      couponStatus
+      couponStatus,
     } = req.body;
 
     console.log("Recieved Data:", req.body);
- 
+
     const resolvedPincode = pincode || getPincode(city, locality);
 
     const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });
-    }       
+    }
 
-      // Bypass coupon validation if user is admin
+    // Bypass coupon validation if user is admin
     if (user.role !== "admin") {
       if ((couponStatus === "true" || couponStatus === true) && coupon) {
         user.coupons.set(coupon, true);
       } else {
-        return res.status(400).json({ message: "Coupon not found. Enter the correct coupon" });
+        return res
+          .status(400)
+          .json({ message: "Coupon not found. Enter the correct coupon" });
       }
     }
-    
+
     if (!resolvedPincode) {
       return res
         .status(400)
         .json({ message: "Pincode not found for provided city and locality." });
     }
-    
+
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
     // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
@@ -107,45 +108,47 @@ const addProperty = async (req, res) => {
 
     // Cloudinary file upload logic for images
     // if (!req.files || !req.files.images || req.files.images.length === 0) {
-      //   return res.status(400).json({ message: "Image files are required" });
-      // }
-      
- let imageUrls;
-let videoUrls;
+    //   return res.status(400).json({ message: "Image files are required" });
+    // }
 
-// Upload images if present
-if (req.files?.images && req.files.images.length > 0) {
-  const imageLocalPaths = req.files.images.map((file) => file.path);
-  const uploadPromises = imageLocalPaths.map((path) =>
-    uploadOnCloudinary(path)
-  );
-  const imgResults = await Promise.all(uploadPromises);
+    let imageUrls;
+    let videoUrls;
 
-  const failedUploads = imgResults.filter((result) => !result);
-  if (failedUploads.length > 0) {
-    return res.status(400).json({ message: "Failed to upload some images" });
-  }
+    // Upload images if present
+    if (req.files?.images && req.files.images.length > 0) {
+      const imageLocalPaths = req.files.images.map((file) => file.path);
+      const uploadPromises = imageLocalPaths.map((path) =>
+        uploadOnCloudinary(path)
+      );
+      const imgResults = await Promise.all(uploadPromises);
 
-  imageUrls = imgResults.map((result) => result.url);
-}
+      const failedUploads = imgResults.filter((result) => !result);
+      if (failedUploads.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "Failed to upload some images" });
+      }
 
-// Upload videos if present
-if (req.files?.videos && req.files.videos.length > 0) {
-  const videoLocalPaths = req.files.videos.map((file) => file.path);
-  const uploadVideoPromises = videoLocalPaths.map((path) =>
-    uploadOnCloudinary(path)
-  );
-  const videoResults = await Promise.all(uploadVideoPromises);
+      imageUrls = imgResults.map((result) => result.url);
+    }
 
-  const failedVideoUploads = videoResults.filter((result) => !result);
-  if (failedVideoUploads.length > 0) {
-    return res
-      .status(400)
-      .json({ message: "Failed to upload some videos" });
-  }
+    // Upload videos if present
+    if (req.files?.videos && req.files.videos.length > 0) {
+      const videoLocalPaths = req.files.videos.map((file) => file.path);
+      const uploadVideoPromises = videoLocalPaths.map((path) =>
+        uploadOnCloudinary(path)
+      );
+      const videoResults = await Promise.all(uploadVideoPromises);
 
-  videoUrls = videoResults.map((result) => result.url);
-}
+      const failedVideoUploads = videoResults.filter((result) => !result);
+      if (failedVideoUploads.length > 0) {
+        return res
+          .status(400)
+          .json({ message: "Failed to upload some videos" });
+      }
+
+      videoUrls = videoResults.map((result) => result.url);
+    }
     // Create property data object
     const data = {
       userId,
@@ -191,13 +194,40 @@ if (req.files?.videos && req.files.videos.length > 0) {
 
     // Save property to the database
     const property = await Property.create(data);
-    
+
+    // saving to google sheets
+    const sheetPayload = {
+      userId,
+      firstName,
+      lastName,
+      city,
+      locality,
+      address,
+      propertyType,
+      bhk: formattedBhk,
+      floor,
+      rent: formattedRent,
+      security: formattedSecurity,
+      squareFeetArea: formattedSquareFeetArea,
+      ownersContactNumber,
+      pincode: resolvedPincode,
+      spaceType,
+      latitude,
+      longitude,
+    };
+
+    try {
+      await axios.post("https://script.google.com/macros/s/AKfycbwKxNslAk6N1r0Hj2SOkLA4GVjQaAEktXGJj2gXUzE-iEMfe6D5HRCkd02atdwcRwCs/exec", sheetPayload);
+    } catch (sheetErr) {
+      console.error("Sheet logging failed:", sheetErr.message);
+    }
+
     if (!property) {
       return res
-      .status(500)
-      .json({ message: "Something went wrong while creating property" });
+        .status(500)
+        .json({ message: "Something went wrong while creating property" });
     }
-    
+
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({
@@ -206,7 +236,7 @@ if (req.files?.videos && req.files.videos.length > 0) {
       msg: "Property registered successfully.",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -313,7 +343,7 @@ const updateProperty = async (req, res) => {
       message: "Property updated successfully.",
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 };
@@ -423,5 +453,5 @@ module.exports = {
   addProperty,
   updateProperty,
   deleteProperty,
-  updatePropertyAvailabilityStatus
+  updatePropertyAvailabilityStatus,
 };

@@ -41,6 +41,28 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     verificationMethod
   });
 
+      //saving to the google sheet
+  try {
+    const sheetResponse = await fetch('https://script.google.com/macros/s/AKfycbzUfv2pg36kDzd4CBnHMbapV7mlwinJ7JuYFx9-MkLcUIXdI85A7mZAj3IOGP0oVNQB0A/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        firstName,
+        lastName,
+        email,
+        phone
+      })
+    });
+
+    const text = await sheetResponse.text();
+    console.log('Google Sheet response:', text);
+  } catch (error) {
+    console.error('Error sending data to Google Sheet:', error);
+    // Optional: Continue without blocking the response
+  }
+
   // Handle verification based on method
   if (verificationMethod === 'email') {
     // Email verification logic
@@ -158,6 +180,26 @@ exports.userSignin = asyncHandler(async (req, res, next) => {
         "Please verify your account first with link shared in your email.",
     });
     // return next(new ApiError(403, "Please verify your account first."));
+  }
+
+      //saving to the google sheet
+    try {
+    const logResponse = await fetch('https://script.google.com/macros/s/AKfycbz3UuGlnTT86dsLfcfqfL1Ep_H05MmlplarRc53t4sUNHJp9UBLV1Fl7WKp-yaqct-HMg/exec', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        type: 'login',
+        email: email,
+      }),
+    });
+
+    const logResult = await logResponse.text();
+    console.log('Login logged:', logResult);
+  } catch (err) {
+    console.error('Google Sheet logging failed:', err.message);
+    // Continue anyway; don't block login
   }
 
   sendToken(user, 200, res);
