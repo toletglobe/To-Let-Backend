@@ -6,6 +6,7 @@ const {
   userSignin,
   accountSecurity,
   verifyOTP,
+  googleLogin
 } = require("../controllers/auth/index");
 const {verifyAccount} = require("../controllers/auth/verificationController")
 const authenticate = require("../middlewares/authMiddleware");
@@ -14,6 +15,7 @@ const { forgotPasswordLimiter } = require("../middlewares/rateLimit");
 
 const router = express.Router();
 
+router.post("/google-login", googleLogin);
 router.post("/register", userSignup);
 router.post("/login", userSignin);
 router.post("/verify-otp",verifyOTP);

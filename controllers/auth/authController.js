@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
 const User = require("../../models/userModel");
@@ -8,6 +7,46 @@ const nodemailer = require("nodemailer");
 const { sendOTP } = require("../../utils/smsService");
 const { sendToken } = require("../../utils/sendToken");
 const { ApiError } = require("../../utils/ApiError");
+const { OAuth2Client } = require("google-auth-library");
+
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+exports.googleLogin = asyncHandler(async (req, res) => {
+  const { token } = req.body;
+  console.log("Reached")
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const { email, name, picture } = ticket.getPayload();
+
+  if (!email || !name) {
+    return res.status(400).json({ message: "Invalid Google token." });
+  }
+
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    const [firstName, ...rest] = name.split(" ");
+    const lastName = rest.join(" ");
+
+    user = await User.create({
+      firstName,
+      lastName,
+      email,
+      profilePicture : picture,
+      isVerified: true,
+      role: "user",
+      password: null, 
+      verificationMethod: 'email',
+    });
+  }
+
+  console.log(user)
+  sendToken(user, 200, res);
+});
 
 // User SignUp
 exports.userSignup = asyncHandler(async (req, res, next) => {
