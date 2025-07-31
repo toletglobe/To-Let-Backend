@@ -39,13 +39,11 @@ const UserSchema = new mongoose.Schema(
     password: {
       select: false,
       type: String,
-      required: true,
     },
 
     // Phone number field - must be exactly 10 digits
     phoneNumber: {
       type: String,
-      required: [true, "Phone number is required"],
       validate: {
         validator: function (v) {
           return /^\+\d{10,15}$/.test(v); // Accepts + followed by 10–15 digits
@@ -137,9 +135,10 @@ const UserSchema = new mongoose.Schema(
 
 // Pre-save middleware to hash the password before saving if it's modified
 UserSchema.pre("save", async function () {
-  if (!this.isModified("password")) {
+  if (!this.isModified("password") || !this.password) {
     return;
   }
+
   this.password = await bcrypt.hash(this.password, 10);
 });
 
