@@ -20,6 +20,7 @@ exports.sendToken = (user, statusCode, res) => {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      phoneNumber : user.phoneNumber
     },
   });
 };

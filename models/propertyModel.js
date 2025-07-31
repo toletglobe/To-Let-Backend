@@ -56,11 +56,11 @@ const PropertySchema = new Schema({
   // },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any", "NA"],
+    enum: ["Bachelors", "Family", "Any", "Both",  "NA"],
   },
   bachelors: {
     type: String,
-    enum: ["Girls", "Boys", "Any", "NA"],
+    enum: ["Girls", "Boys", "Any", "Both", "NA"],
   },
   type: {
     type: String,
