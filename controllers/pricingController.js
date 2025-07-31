@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 const Pricing = require("../models/pricingModel");
 const Property = require("../models/propertyModel");
-const User = require('../models/userModel');
+const User = require("../models/userModel");
 
 const pricingSubmit = async (req, res) => {
   try {
@@ -20,8 +20,6 @@ const pricingSubmit = async (req, res) => {
       comparePropertyIds,
     } = req.body;
 
-    console.log(comparePropertyIds);
-
     let formattedPropertyDetails = "No properties selected.";
     let formattedPropertyLinks = "No properties selected.";
 
@@ -30,7 +28,7 @@ const pricingSubmit = async (req, res) => {
         ? comparePropertyIds
         : [comparePropertyIds];
 
-      const selectedProperties = await Property.find({ _id: { $in: ids } });
+      const selectedProperties = await Property.find({ slug: { $in: ids } });
       console.log("Fetched properties:", selectedProperties);
 
       if (selectedProperties.length > 0) {
@@ -39,11 +37,12 @@ const pricingSubmit = async (req, res) => {
           .map((prop, idx) => {
             const lat = prop.latitude;
             const lng = prop.longitude;
-            const locationLink = lat && lng
-              ? `https://www.google.com/maps?q=${lat},${lng}`
-              : "N/A";
+            const locationLink =
+              lat && lng
+                ? `https://www.google.com/maps?q=${lat},${lng}`
+                : "N/A";
 
-            return `#${idx + 1}: https://toletglobe.in/property/${prop._id}
+            return `#${idx + 1}: https://toletglobe.in/property/${prop.slug}
 Owner Contact: ${prop.ownersContactNumber || "N/A"} 
 Location: ${locationLink}`;
           })
@@ -51,18 +50,21 @@ Location: ${locationLink}`;
 
         // Format for email to user (just links)
         formattedPropertyLinks = selectedProperties
-          .map((prop, idx) => `#${idx + 1}: https://toletglobe.in/property/${prop._id}`)
+          .map(
+            (prop, idx) =>
+              `#${idx + 1}: https://toletglobe.in/property/${prop.slug}`
+          )
           .join("\n");
       }
     }
 
     // Nodemailer transporter
     const transporter = nodemailer.createTransport({
-      host:"smtp.gmail.com",
+      host: process.env.SMTP_HOST,
       port: 465,
       secure: true,
       auth: {
-        user: process.env.SMTP_USER,  // Changed from hardcoded to env variable
+        user: "sales@toletglobe.in", // Changed from hardcoded to env variable
         pass: process.env.SMTP_PASS,
       },
     });
@@ -71,7 +73,7 @@ Location: ${locationLink}`;
     let userMailOptions = {
       from: {
         name: "ToLetGlobe",
-        address: "sales@toletglobe.in",  // From sales@ for user email
+        address: "sales@toletglobe.in", // From sales@ for user email
       },
       to: email,
       subject: "Thanks for your enquiry – ToLetGlobe",
@@ -104,9 +106,9 @@ ToLetGlobe Team
     let backendMailOptions = {
       from: {
         name: "ToLetGlobe Form",
-        address: process.env.SMTP_USER,  // From SMTP_USER for backend email
+        address: process.env.SMTP_USER, // From SMTP_USER for backend email
       },
-      to: email,
+      to: "sales@toletglobe.in",
       subject: `New Enquiry Submitted – ${firstName} ${lastName}`,
       text: `
 ${firstName} ${lastName} has submitted an enquiry. Details below:

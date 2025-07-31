@@ -147,7 +147,7 @@ const PropertySchema = new Schema({
   },
   subscriptionPlan: {
     type: Number,
-    enum: [0, 299, 499, 699, 999, 1499],
+    enum: [0, 299, 499, 699, 999, 1499, 4999, 9999, 14999, 19999, 24999],
   },
   slug: {
     type: String,
