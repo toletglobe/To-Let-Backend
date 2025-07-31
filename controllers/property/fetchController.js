@@ -96,18 +96,12 @@ const getFilteredProperties = async (req, res) => {
     }
 
     // Handling genderPreference filter
-    if (genderPreference && preferenceHousing !== "Family") {
-      if (genderPreference === "Others") {
-        filter.bachelors = {
-          $in: ["Boys", "Girls"],
-        };
-      } else {
-        filter.bachelors = {
-          $in: Array.isArray(genderPreference)
-            ? genderPreference
-            : [genderPreference],
-        };
-      }
+    if (
+      genderPreference &&
+      genderPreference !== "Any" &&
+      (filter.propertyType?.$in?.includes("PG") || filter.propertyType === "PG")
+    ) {
+      filter.bachelors = genderPreference;
     }
 
     // Handling houseType filter
