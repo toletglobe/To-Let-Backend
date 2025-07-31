@@ -4,7 +4,7 @@ const Review = require("../../models/reviewModel.js");
 const { uploadOnCloudinary } = require("../../utils/cloudinary.js");
 const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
-
+const axios = require('axios');
 
 const addProperty = async (req, res) => {
   try {
@@ -198,6 +198,39 @@ if (req.files?.videos && req.files.videos.length > 0) {
       .json({ message: "Something went wrong while creating property" });
     }
     
+     // saving to google sheets
+    const sheetPayload = {
+      userId,
+      firstName,
+      lastName,
+      city,
+      locality,
+      address,
+      propertyType,
+      bhk: formattedBhk,
+      floor,
+      rent: formattedRent,
+      security: formattedSecurity,
+      squareFeetArea: formattedSquareFeetArea,
+      ownersContactNumber,
+      pincode: resolvedPincode,
+      spaceType,
+      latitude,
+      longitude,
+    };
+
+    try {
+      await axios.post("https://script.google.com/macros/s/AKfycbwKxNslAk6N1r0Hj2SOkLA4GVjQaAEktXGJj2gXUzE-iEMfe6D5HRCkd02atdwcRwCs/exec", sheetPayload);
+    } catch (sheetErr) {
+      console.error("Sheet logging failed:", sheetErr.message);
+    }
+
+    if (!property) {
+      return res
+        .status(500)
+        .json({ message: "Something went wrong while creating property" });
+    }
+
     await user.save(); // saving the coupon
     await property.save();
     return res.status(201).json({

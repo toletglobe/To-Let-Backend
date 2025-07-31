@@ -7,7 +7,7 @@ const Property = require("../models/propertyModel");
 exports.getUserInfo = async (req, res) => {
   try {
     const { token } = req.query;
-
+    console.log("reached" , token)
     if (!token) {
       return res.status(401).json("Unauthorized");
     }
@@ -18,6 +18,7 @@ exports.getUserInfo = async (req, res) => {
       return res.status(404).json("User not found");
     }
 
+    console.log(user)
     const userData = {
       id: user._id,
       firstName: user.firstName,
@@ -56,6 +57,28 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+exports.SaveMobile = async (req, res) => {
+  const { phoneNumber } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const user = await User.findById(userId, "phoneNumber");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // if (user.phoneNumber && user.phoneNumber.trim() !== '') {
+    //   return res.status(400).json({ message: "Number already found", isOpen: false });
+    // }
+
+    user.phoneNumber = phoneNumber;
+    await user.save();
+
+    res.status(200).json({ message: "User updated successfully", isOpen: false });
+  } catch (error) {
+    console.error("Error updating user: ", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 
 exports.uploadProfilePicture = async (req, res) => {
   try {
@@ -194,7 +217,8 @@ exports.removeFromFavourites = async (req, res) => {
 
 
 const VALID_COUPONS = {
-  "TOLET2025": 1 // Can be used once
+  "TOLET2025": 1 ,// Can be used once, 
+  "TOLET" : 2
 };
 
 exports.checkUserCouponUsage = async (req, res) => {
