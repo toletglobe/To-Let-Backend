@@ -217,7 +217,7 @@ exports.removeFromFavourites = async (req, res) => {
 
 
 const VALID_COUPONS = {
-  "TOLET2025": 1 ,// Can be used once, 
+  "TOLET2025": 1 // Can be used once, 
 };
 
 exports.checkUserCouponUsage = async (req, res) => {
