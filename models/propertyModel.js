@@ -22,6 +22,15 @@ const PropertySchema = new Schema({
   ownersAlternateContactNumber: {
     type: String,
   },
+  ownerLocation: {
+    type: String,
+    enum: [
+      "Same location as property",
+      "Same City Different Location",
+      "Different City",
+    ],
+    required: true,
+  },
   pincode: {
     type: Number,
     required: true,
@@ -56,7 +65,7 @@ const PropertySchema = new Schema({
   // },
   preference: {
     type: String,
-    enum: ["Bachelors", "Family", "Any", "Both",  "NA"],
+    enum: ["Bachelors", "Family", "Any", "Both", "NA"],
   },
   bachelors: {
     type: String,

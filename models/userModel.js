@@ -44,12 +44,12 @@ const UserSchema = new mongoose.Schema(
     // Phone number field - must be exactly 10 digits
     phoneNumber: {
       type: String,
-      validate: {
-        validator: function (v) {
-          return /^\+\d{10,15}$/.test(v); // Accepts + followed by 10–15 digits
-        },
-        message: "Phone number must be in international format (e.g., +918408990000)",
-      },
+      // validate: {
+      //   validator: function (v) {
+      //     return /^\+\d{10,15}$/.test(v); // Accepts + followed by 10–15 digits
+      //   },
+      //   message: "Phone number must be in international format (e.g., +918408990000)",
+      // },
       trim: true,
       index: true,
     },
@@ -92,8 +92,8 @@ const UserSchema = new mongoose.Schema(
     },
     verificationMethod: {
       type: String,
-      enum: ['email', 'sms'],
-      default: 'email'
+      enum: ["email", "sms"],
+      default: "email",
     },
 
     // Security answer for additional user security
@@ -117,18 +117,17 @@ const UserSchema = new mongoose.Schema(
     verificationTokenExpires: {
       type: Date,
     },
-    coupons : {
+    coupons: {
       type: Map,
       of: Boolean,
       default: {},
     },
     properties: [
-  {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Property"
-  }
-],
-
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Property",
+      },
+    ],
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

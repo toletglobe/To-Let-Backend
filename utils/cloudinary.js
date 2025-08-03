@@ -47,5 +47,39 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-module.exports = { uploadOnCloudinary };
-  
+/**
+ * Deletes an image from Cloudinary using its URL
+ * @param {string} imageUrl - The Cloudinary URL of the image to delete
+ * @returns {boolean} - True if deletion was successful, false otherwise
+ */
+const deleteFromCloudinary = async (imageUrl) => {
+  try {
+    if (!imageUrl) {
+      console.warn("deleteFromCloudinary: No image URL provided");
+      return false;
+    }
+
+    // Extract public_id from Cloudinary URL
+    const urlParts = imageUrl.split("/");
+    const filenameWithExtension = urlParts[urlParts.length - 1];
+    const publicId = filenameWithExtension.split(".")[0];
+
+    // Get the folder path if it exists
+    const folderPath = urlParts.slice(-2, -1)[0]; // Get the folder name
+    const fullPublicId = folderPath ? `${folderPath}/${publicId}` : publicId;
+
+    console.log("Deleting from Cloudinary:", fullPublicId);
+
+    const result = await cloudinary.uploader.destroy(fullPublicId, {
+      resource_type: "image",
+    });
+
+    console.log("Deletion successful:", result);
+    return true;
+  } catch (error) {
+    console.error("Cloudinary deletion failed:", error);
+    return false;
+  }
+};
+
+module.exports = { uploadOnCloudinary, deleteFromCloudinary };
