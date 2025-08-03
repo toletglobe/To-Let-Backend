@@ -9,6 +9,16 @@ const { asyncHandler } = require("../../utils/asyncHandler.js");
 const { ApiError } = require("../../utils/ApiError.js");
 const axios = require("axios");
 
+// Import pincode data and define getPincode function
+const pincodeData = require("../../data.json");
+
+const getPincode = (city, locality) => {
+  const result = pincodeData.find(
+    (entry) => entry.city === city && entry.locality === locality
+  );
+  return result ? result.pincode : null;
+};
+
 const addProperty = async (req, res) => {
   try {
     const {
@@ -482,7 +492,7 @@ const deleteProperty = async (req, res) => {
     await Property.findByIdAndDelete(propertyId);
 
     return res.status(200).json({
-      statusCode: 200,
+      // statusCode: 200,
       message: "Property deleted successfully.",
     });
   } catch (error) {
