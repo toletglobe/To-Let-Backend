@@ -26,6 +26,8 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
+      lowercase: true,      //normalize case
+      trim: true,           //remove whitespace
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         "Please enter a valid email address",
@@ -62,6 +64,7 @@ const UserSchema = new mongoose.Schema(
         values: USER_ROLES,
         message: "{VALUE} is not a valid user role",
       },
+      lowercase: true,       //use lowercase role values for consistent storage
       default: "user",
       index: true, // If filtering users by role often
     },
@@ -111,13 +114,15 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
+//compound index for frequent role+verification queries
+UserSchema.index({ role:1, isVerified:1 });
 
 // Pre-save middleware to hash the password before saving if it's modified
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) {
     return;
   }
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 12);     //stronger hashing 12 instead of 10
 });
 
 // Method to compare provided password with hashed password in the database
