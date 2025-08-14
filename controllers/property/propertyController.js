@@ -41,7 +41,7 @@ const addProperty = async (req, res) => {
       // locationLink,
       appliances,
       amenities,
-      // addressVerification,
+      addressVerification,     
       availabilityStatus,
       aboutTheProperty,
       latitude,
@@ -74,6 +74,9 @@ const addProperty = async (req, res) => {
         .status(400)
         .json({ message: "Pincode not found for provided city and locality." });
     }
+      if (!addressVerification) {
+        return res.status(400).json({ message: " Address verification document is required."});
+      }
     
     // Format the boolean fields correctly
     // const formattedPetsAllowed = petsAllowed === "true";
@@ -186,7 +189,7 @@ const addProperty = async (req, res) => {
       // locationLink,
       appliances,
       amenities,
-      // addressVerification,
+      addressVerification,
       availabilityStatus,
       aboutTheProperty,
       latitude,
