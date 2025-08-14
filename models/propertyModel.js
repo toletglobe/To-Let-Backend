@@ -134,7 +134,18 @@ const PropertySchema = new Schema({
   // addressVerification: {
   //   type: String,
   // },
-
+  addressVerification: {
+    aadharNumber: {
+      type: String,
+      required: true,
+      match: /^[0-9]{12}$/   //Aadhar should be exactly 12 digits
+    },
+    electricityBillNumber: {
+      type: String,
+      required: true,
+      trim: true
+    }
+  },
   availabilityStatus: {
     type: String,
     default: "Available",
