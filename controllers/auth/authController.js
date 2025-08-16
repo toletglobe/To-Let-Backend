@@ -9,12 +9,11 @@ const { sendToken } = require("../../utils/sendToken");
 const { ApiError } = require("../../utils/ApiError");
 const { OAuth2Client } = require("google-auth-library");
 
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.googleLogin = asyncHandler(async (req, res) => {
   const { token } = req.body;
-  console.log("Reached")
+  console.log("Reached");
   const ticket = await client.verifyIdToken({
     idToken: token,
     audience: process.env.GOOGLE_CLIENT_ID,
@@ -36,15 +35,15 @@ exports.googleLogin = asyncHandler(async (req, res) => {
       firstName,
       lastName,
       email,
-      profilePicture : picture,
+      profilePicture: picture,
       isVerified: true,
       role: "user",
-      password: null, 
-      verificationMethod: 'email',
+      password: null,
+      verificationMethod: "email",
     });
   }
 
-  console.log(user)
+  console.log(user);
   sendToken(user, 200, res);
 });
 
@@ -56,7 +55,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone,
-    verificationMethod = 'email' // Default to email
+    verificationMethod = "email", // Default to email
   } = req.body;
 
   // Check if user already exists
@@ -67,7 +66,7 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
       .status(201)
       .json({ message: "A user with this email already exists." });
   }
-  
+
   // Create new user
   const user = new User({
     firstName,
@@ -77,42 +76,45 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     phoneNumber: phone,
     role: "user",
     isVerified: false,
-    verificationMethod
+    verificationMethod,
   });
- try {
-    const sheetResponse = await fetch('https://script.google.com/macros/s/AKfycbzUfv2pg36kDzd4CBnHMbapV7mlwinJ7JuYFx9-MkLcUIXdI85A7mZAj3IOGP0oVNQB0A/exec', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        firstName,
-        lastName,
-        email,
-        phone
-      })
-    });
+  try {
+    const sheetResponse = await fetch(
+      "https://script.google.com/macros/s/AKfycbzUfv2pg36kDzd4CBnHMbapV7mlwinJ7JuYFx9-MkLcUIXdI85A7mZAj3IOGP0oVNQB0A/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          firstName,
+          lastName,
+          email,
+          phone,
+        }),
+      }
+    );
 
     const text = await sheetResponse.text();
-    console.log('Google Sheet response:', text);
+    console.log("Google Sheet response:", text);
   } catch (error) {
-    console.error('Error sending data to Google Sheet:', error);
+    console.error("Error sending data to Google Sheet:", error);
     // Optional: Continue without blocking the response
   }
 
   // Handle verification based on method
-  if (verificationMethod === 'email') {
+  if (verificationMethod === "email") {
     // Email verification logic
     const verificationToken = crypto.randomBytes(32).toString("hex");
     user.verificationToken = verificationToken;
     user.verificationTokenExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    
+
     try {
       await sendEmail(email, verificationToken);
       await user.save();
-      return res.status(200).json({ 
+      return res.status(200).json({
         message: "Verification email sent!",
-        verificationMethod: 'email'
+        verificationMethod: "email",
       });
     } catch (err) {
       console.error("Email send failed:", err.message);
@@ -122,20 +124,19 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     }
   } else {
     // SMS verification logic
-    
+
     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
     user.otp = otp;
     user.otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    
-    
+
     try {
-      const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+      const formattedPhone = phone.startsWith("+") ? phone : `+91${phone}`;
       const smsSent = await sendOTP(formattedPhone, otp);
       await user.save();
       if (smsSent) {
-        return res.status(200).json({ 
+        return res.status(200).json({
           message: "OTP sent to your phone!",
-          verificationMethod: 'sms'
+          verificationMethod: "sms",
         });
       } else {
         return res.status(201).json({
@@ -155,15 +156,15 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
 exports.verifyOTP = asyncHandler(async (req, res, next) => {
   const { email, otp } = req.body;
 
-  const user = await User.findOne({ 
+  const user = await User.findOne({
     email,
     otp,
-    otpExpires: { $gt: Date.now() }
+    otpExpires: { $gt: Date.now() },
   });
 
   if (!user) {
-    return res.status(201).json({ 
-      message: "Invalid or expired OTP." 
+    return res.status(201).json({
+      message: "Invalid or expired OTP.",
     });
   }
 
@@ -172,14 +173,14 @@ exports.verifyOTP = asyncHandler(async (req, res, next) => {
   user.otpExpires = undefined;
   await user.save();
 
-  res.status(200).json({ 
+  res.status(200).json({
     message: "Phone number verified successfully!",
     user: {
       id: user._id,
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-    }
+    },
   });
 });
 
@@ -219,21 +220,24 @@ exports.userSignin = asyncHandler(async (req, res, next) => {
     // return next(new ApiError(403, "Please verify your account first."));
   }
   try {
-    const logResponse = await fetch('https://script.google.com/macros/s/AKfycbz3UuGlnTT86dsLfcfqfL1Ep_H05MmlplarRc53t4sUNHJp9UBLV1Fl7WKp-yaqct-HMg/exec', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        type: 'login',
-        email: email,
-      }),
-    });
+    const logResponse = await fetch(
+      "https://script.google.com/macros/s/AKfycbz3UuGlnTT86dsLfcfqfL1Ep_H05MmlplarRc53t4sUNHJp9UBLV1Fl7WKp-yaqct-HMg/exec",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          type: "login",
+          email: email,
+        }),
+      }
+    );
 
     const logResult = await logResponse.text();
-    console.log('Login logged:', logResult);
+    console.log("Login logged:", logResult);
   } catch (err) {
-    console.error('Google Sheet logging failed:', err.message);
+    console.error("Google Sheet logging failed:", err.message);
     // Continue anyway; don't block login
   }
   sendToken(user, 200, res);

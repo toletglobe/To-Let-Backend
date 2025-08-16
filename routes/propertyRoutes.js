@@ -13,11 +13,11 @@ const {
   getPropertiesByUserId,
   getPropertyByArea,
   updatePropertyAvailabilityStatus,
-  purchaseQuery
+  purchaseQuery,
 } = require("../controllers/property/index.js");
 
 const upload = require("../middlewares/multer.js");
-const Property=require("../models/propertyModel.js");
+const Property = require("../models/propertyModel.js");
 const authenticate = require("../middlewares/authMiddleware.js");
 //const { BASE_URL } = require("../../Tolet-Globe-Frontend/src/constant/constant.js");
 // import("../../Tolet-Globe-Frontend/src/constant/constant.js").then(({ BASE_URL }) => {
@@ -53,15 +53,13 @@ router.get("/status", getPropertiesByStatus);
 // http://localhost:8000/api/v1/property?page=2&limit=5
 // router.route("/").get(GetProperty); //change names and methods according to your endpoints
 
-router
-  .route("/update-property/:id")
-  .patch(
-    upload.fields([
-      { name: "images", maxCount: 7 },   // Adjust the maxCount as needed
-      { name: "videos", maxCount: 7 },   // Optional, if you're uploading videos
-    ]),
-    updateProperty
-  );
+router.route("/update-property/:id").patch(
+  upload.fields([
+    { name: "images", maxCount: 7 }, // Adjust the maxCount as needed
+    { name: "videos", maxCount: 7 }, // Optional, if you're uploading videos
+  ]),
+  updateProperty
+);
 // router.route("/update-property/:id").patch(updateProperty); //change names and methods according to your endpoints
 router
   .route("/update-property-availability-status/:id")
@@ -95,17 +93,17 @@ router.route("/").delete(addProperty); //change names and methods according to y
 
 */
 // router.put("/:id/availability", async (req, res) => {
-  //   try {
-    //     // Find property by ID
-    //     const property = await Property.findById(req.params.id);
+//   try {
+//     // Find property by ID
+//     const property = await Property.findById(req.params.id);
 //     if (!property) {
-  //       return res.status(404).json({ message: "Property not found" });
+//       return res.status(404).json({ message: "Property not found" });
 //     }
 
 //     // Validate status
 //     const validStatuses = ["Available", "Rented Out", "NA"];
 //     if (!validStatuses.includes(req.body.availabilityStatus)) {
-  //       return res.status(400).json({ message: "Invalid status" });
+//       return res.status(400).json({ message: "Invalid status" });
 //     }
 
 //     // Update status directly
@@ -114,30 +112,34 @@ router.route("/").delete(addProperty); //change names and methods according to y
 
 //     res.json(property);
 //   } catch (error) {
-  //     res.status(500).json({ message: error.message });
+//     res.status(500).json({ message: error.message });
 //   }
 // });
 router.put("/:id/availability", async (req, res) => {
   try {
     console.log("Request received to update availability status", req.body);
-    
-    const property = await Property.findById(req.params.id);
-    if (!property) {
-      console.log("Property not found for ID:", req.params.id);
-      return res.status(404).json({ message: "Property not found" });
-    }
 
     const validStatuses = ["Available", "Rented Out", "NA"];
     if (!validStatuses.includes(req.body.availabilityStatus)) {
       console.log("Invalid status received:", req.body.availabilityStatus);
       return res.status(400).json({ message: "Invalid status" });
     }
-    
-    property.availabilityStatus = req.body.availabilityStatus;
-    await property.save();
-    console.log("Property status updated successfully:", property);
-    
-    res.json(property);
+
+    // Use findByIdAndUpdate instead of save() to avoid full document validation
+    const updatedProperty = await Property.findByIdAndUpdate(
+      req.params.id,
+      { availabilityStatus: req.body.availabilityStatus },
+      { new: true, runValidators: false } // new: true returns the updated document, runValidators: false skips validation
+    );
+
+    if (!updatedProperty) {
+      console.log("Property not found for ID:", req.params.id);
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    console.log("Property status updated successfully:", updatedProperty);
+
+    res.json(updatedProperty);
   } catch (error) {
     console.error("Error updating property availability status:", error);
     res.status(500).json({ message: "Server error", error: error.message });
