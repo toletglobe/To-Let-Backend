@@ -178,26 +178,109 @@ const getFilteredProperties = async (req, res) => {
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Fetch filtered properties from the database with sorting and pagination
-    const properties = await Property.find(filter)
-      .sort({
-        availabilityStatus: 1,
-        createdAt: -1,
-      })
-      .skip(skip)
-      .limit(limitNum);
+    // If user has searched for specific area or locality, use custom sorting
+    if (area || locality) {
+      // First, get all properties with the current filter
+      const allProperties = await Property.find(filter);
 
-    const total = await Property.find(filter).countDocuments(); // Total number of properties
-    const totalPages = Math.ceil(total / limitNum);
+      // Separate properties by availability status first
+      const availableProperties = [];
+      const unavailableProperties = [];
 
-    // Send successful response with filtered properties
-    res.status(200).json({
-      success: true,
-      data: properties,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: totalPages,
-    });
+      allProperties.forEach((property) => {
+        if (property.availabilityStatus === "Available") {
+          availableProperties.push(property);
+        } else {
+          unavailableProperties.push(property);
+        }
+      });
+
+      // Function to sort properties by area/locality priority
+      const sortByAreaPriority = (properties) => {
+        return properties.sort((a, b) => {
+          let aPriority = 0;
+          let bPriority = 0;
+
+          // Check area priority
+          if (area && validAreas && validAreas.length > 0) {
+            const aArea = toTitleCase(a.area || "");
+            const bArea = toTitleCase(b.area || "");
+
+            if (validAreas.includes(aArea)) aPriority += 2;
+            if (validAreas.includes(bArea)) bPriority += 2;
+          }
+
+          // Check locality priority
+          if (locality) {
+            const aLocality = toTitleCase(a.locality || "");
+            const bLocality = toTitleCase(b.locality || "");
+            const searchedLocality = toTitleCase(locality);
+
+            if (aLocality === searchedLocality) aPriority += 1;
+            if (bLocality === searchedLocality) bPriority += 1;
+          }
+
+          // If priority is the same, sort by creation date (newest first)
+          if (aPriority === bPriority) {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+          }
+
+          // Higher priority first
+          return bPriority - aPriority;
+        });
+      };
+
+      // Sort available properties by area/locality priority
+      const sortedAvailableProperties = sortByAreaPriority(availableProperties);
+
+      // Sort unavailable properties by area/locality priority
+      const sortedUnavailableProperties = sortByAreaPriority(
+        unavailableProperties
+      );
+
+      // Combine: Available properties first, then unavailable
+      const sortedProperties = [
+        ...sortedAvailableProperties,
+        ...sortedUnavailableProperties,
+      ];
+
+      // Apply pagination
+      const startIndex = skip;
+      const endIndex = skip + limitNum;
+      const paginatedProperties = sortedProperties.slice(startIndex, endIndex);
+
+      const total = allProperties.length;
+      const totalPages = Math.ceil(total / limitNum);
+
+      // Send successful response with prioritized properties
+      res.status(200).json({
+        success: true,
+        data: paginatedProperties,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: totalPages,
+      });
+    } else {
+      // If no area/locality search, use the original sorting
+      const properties = await Property.find(filter)
+        .sort({
+          availabilityStatus: 1,
+          createdAt: -1,
+        })
+        .skip(skip)
+        .limit(limitNum);
+
+      const total = await Property.find(filter).countDocuments();
+      const totalPages = Math.ceil(total / limitNum);
+
+      res.status(200).json({
+        success: true,
+        data: properties,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: totalPages,
+      });
+    }
   } catch (error) {
     // Send error response
     res.status(500).json({

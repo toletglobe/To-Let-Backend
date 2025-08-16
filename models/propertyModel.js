@@ -25,9 +25,9 @@ const PropertySchema = new Schema({
   ownerLocation: {
     type: String,
     enum: [
-      "Same location as property",
-      "Same City Different Location",
-      "Different City",
+      "Lives in same property",
+      "Lives in same city",
+      "Lives in different city",
     ],
     required: true,
   },
