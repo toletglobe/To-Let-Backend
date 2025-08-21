@@ -74,6 +74,6 @@ router.post("/removeFromFavourites", authenticate, removeFromFavourites);
 router.get("/info", authenticate, getUserInfo);
 router.put("/update", authenticate, updateUser);
 router.put("/savemobile", authenticate, SaveMobile);
-router.post("/check-coupon-usage", authenticate, checkUserCouponUsage);
+router.post("/check-coupon-usage", checkUserCouponUsage);
 
 module.exports = router;

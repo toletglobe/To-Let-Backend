@@ -7,7 +7,7 @@ const Property = require("../models/propertyModel");
 exports.getUserInfo = async (req, res) => {
   try {
     const { token } = req.query;
-    console.log("reached" , token)
+    console.log("reached", token);
     if (!token) {
       return res.status(401).json("Unauthorized");
     }
@@ -18,7 +18,7 @@ exports.getUserInfo = async (req, res) => {
       return res.status(404).json("User not found");
     }
 
-    console.log(user)
+    console.log(user);
     const userData = {
       id: user._id,
       firstName: user.firstName,
@@ -26,8 +26,8 @@ exports.getUserInfo = async (req, res) => {
       email: user.email,
       phoneNumber: user.phoneNumber,
       profilePicture: user.profilePicture,
-      properties:user.properties,
-      role : user.role
+      properties: user.properties,
+      role: user.role,
     };
 
     res.status(200).json(userData);
@@ -57,28 +57,51 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 exports.SaveMobile = async (req, res) => {
   const { phoneNumber } = req.body;
   const userId = req.user.id;
 
   try {
-    const user = await User.findById(userId, "phoneNumber");
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // if (user.phoneNumber && user.phoneNumber.trim() !== '') {
-    //   return res.status(400).json({ message: "Number already found", isOpen: false });
-    // }
-
     user.phoneNumber = phoneNumber;
+    const firstName = user.firstName;
+    const lastName = user.lastName;
+    const email = user.email;
+    const role = user.role;
+
     await user.save();
 
-    res.status(200).json({ message: "User updated successfully", isOpen: false });
+    try {
+      const sheetResponse = await fetch(process.env.REGN_SHEET_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          name: firstName + " " + lastName,
+          email: email,
+          phoneNumber,
+          role: role,
+        }),
+      });
+
+      const text = await sheetResponse.text();
+      console.log("Google Sheet response:", text);
+    } catch (error) {
+      console.error("Error sending data to Google Sheet:", error);
+    }
+
+    res
+      .status(200)
+      .json({ message: "User updated successfully", isOpen: false });
   } catch (error) {
     console.error("Error updating user: ", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 exports.uploadProfilePicture = async (req, res) => {
   try {
@@ -215,16 +238,15 @@ exports.removeFromFavourites = async (req, res) => {
   }
 };
 
-
 const VALID_COUPONS = {
-  "TOLET2025": 1 // Can be used once, 
+  TOLET2025: 1, // Can be used once,
 };
 
 exports.checkUserCouponUsage = async (req, res) => {
   try {
     const { userId, couponCode } = req.body;
-    console.log(req.body)
-    console.log(couponCode)
+    console.log(req.body);
+    console.log(couponCode);
     console.log("Checking coupon usage for user:", userId);
 
     // Find the user by ID
@@ -234,10 +256,10 @@ exports.checkUserCouponUsage = async (req, res) => {
     }
 
     // If the user is Admin then give coupon validity true
-    if(user.role === "admin"){
-      return res.status(200).json({ 
+    if (user.role === "admin" || user.role === "intermidiate") {
+      return res.status(200).json({
         valid: true,
-        message: "Coupon Applied"
+        message: "Coupon Applied",
       });
     }
     // If just checking current coupon usage without validation
@@ -256,11 +278,10 @@ exports.checkUserCouponUsage = async (req, res) => {
     }
 
     // Coupon is valid and not used yet
-    return res.status(200).json({ 
+    return res.status(200).json({
       valid: true,
-      message: "Coupon Applied"
+      message: "Coupon Applied",
     });
-
   } catch (error) {
     console.error("Error checking coupon usage:", error);
     return res.status(500).json({ message: "Internal server error" });

@@ -74,8 +74,8 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Bypass coupon validation if user is admin
-    if (user.role !== "admin") {
+    // Bypass coupon validation if user is admin or intermidiate
+    if (user.role !== "admin" || user.role !== "intermidiate") {
       if ((couponStatus === "true" || couponStatus === true) && coupon) {
         user.coupons.set(coupon, true);
       } else {
@@ -91,39 +91,12 @@ const addProperty = async (req, res) => {
         .json({ message: "Pincode not found for provided city and locality." });
     }
 
-    // Format the boolean fields correctly
-    // const formattedPetsAllowed = petsAllowed === "true";
-    // const formattedCarParking = carParking === "true";          Because petsAllowed and carParking now string (Yes or No) not boolean
-
-    // Convert numeric fields from the request
-    // const formattedRent = Number(rent);
-    // const formattedSecurity = Number(security);
-    // const formattedBhk = Number(bhk);
-    // const formattedSquareFeetArea = Number(squareFeetArea);
-
-    // Validate that numeric fields are valid numbers
-    // if (
-    //   isNaN(formattedRent) ||
-    //   isNaN(formattedSecurity) ||
-    //   isNaN(formattedBhk) ||
-    //   isNaN(formattedSquareFeetArea)
-    // ) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Numeric fields must be valid numbers" });
-    // }
-
     const formattedRent = isNaN(Number(rent)) ? "NA" : Number(rent);
     const formattedSecurity = isNaN(Number(security)) ? "NA" : Number(security);
     const formattedBhk = isNaN(Number(bhk)) ? "NA" : Number(bhk);
     const formattedSquareFeetArea = isNaN(Number(squareFeetArea))
       ? "NA"
       : Number(squareFeetArea);
-
-    // Cloudinary file upload logic for images
-    // if (!req.files || !req.files.images || req.files.images.length === 0) {
-    //   return res.status(400).json({ message: "Image files are required" });
-    // }
 
     let imageUrls;
     let videoUrls;
@@ -235,13 +208,26 @@ const addProperty = async (req, res) => {
       spaceType,
       latitude,
       longitude,
+      coupon,
+      subscriptionPlan,
+      ownerLocation,
     };
 
     try {
-      await axios.post(
-        "https://script.google.com/macros/s/AKfycbwKxNslAk6N1r0Hj2SOkLA4GVjQaAEktXGJj2gXUzE-iEMfe6D5HRCkd02atdwcRwCs/exec",
-        sheetPayload
+      // Convert the payload to URL parameters for Google Apps Script
+      const params = new URLSearchParams(sheetPayload);
+
+      const response = await axios.post(
+        process.env.ADDPROPPERTY_SHEET_URL,
+        params,
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
       );
+      const resultText = response.data; // Use response.data instead of response.text()
+      console.log("Google Sheet log:", resultText);
     } catch (sheetErr) {
       console.error("Sheet logging failed:", sheetErr.message);
     }

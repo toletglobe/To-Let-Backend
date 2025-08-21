@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 
 // Define user roles and user types
-const USER_ROLES = ["admin", "content creator", "user"];
+const USER_ROLES = ["admin", "content creator", "user", "intermidiate"];
 // const USER_TYPE = ["buyer", "tenant", "owner"];
 
 // Define the User schema
