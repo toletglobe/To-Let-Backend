@@ -226,7 +226,7 @@ exports.checkUserCouponUsage = async (req, res) => {
     console.log(req.body)
     console.log(couponCode)
     console.log("Checking coupon usage for user:", userId);
-
+  
     // Find the user by ID
     const user = await User.findById(userId);
     if (!user) {
