@@ -74,8 +74,8 @@ const addProperty = async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    // Bypass coupon validation if user is admin
-    if (user.role !== "admin") {
+    // Bypass coupon validation if user is admin or intermidiate
+    if (user.role !== "admin" || user.role !== "intermidiate") {
       if ((couponStatus === "true" || couponStatus === true) && coupon) {
         user.coupons.set(coupon, true);
       } else {
