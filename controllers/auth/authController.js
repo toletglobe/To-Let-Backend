@@ -27,6 +27,7 @@ exports.googleLogin = asyncHandler(async (req, res) => {
 
   let user = await User.findOne({ email });
 
+  // Register using Google OAuth
   if (!user) {
     const [firstName, ...rest] = name.split(" ");
     const lastName = rest.join(" ");
@@ -41,9 +42,89 @@ exports.googleLogin = asyncHandler(async (req, res) => {
       password: null,
       verificationMethod: "email",
     });
+    console.log(user);
+  }
+  // Login using Googler OAuth
+  else {
+    try {
+      const logResponse = await fetch(process.env.LOGIN_SHEET_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          name: name,
+          role: user.role,
+          email: email,
+          phoneNumber: user.phoneNumber,
+        }),
+      });
+
+      const logResult = await logResponse.text();
+      console.log("Login logged:", logResult);
+    } catch (err) {
+      console.error("Google Sheet logging failed:", err.message);
+      // Continue anyway; don't block login
+    }
+  }
+  sendToken(user, 200, res);
+});
+
+// User Signin
+exports.userSignin = asyncHandler(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  console.log("LOGIN ATTEMPT FOR EMAIL:", email);
+
+  // Lowercase email to prevent mismatch
+  const user = await User.findOne({ email: email.toLowerCase() }).select(
+    "+password"
+  );
+
+  console.log("FOUND USER:", user);
+
+  if (!user) {
+    return res.status(201).json({
+      message: "No user found with this email. Please sign up.",
+    });
+    // return next(new ApiError(400, "User not found."));
   }
 
-  console.log(user);
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) {
+    return res.status(201).json({
+      message: "Invalid credentials. Please try again.",
+    });
+    // return next(new ApiError(401, "Invalid credentials."));
+  }
+
+  if (!user.isVerified) {
+    return res.status(201).json({
+      message:
+        "Please verify your account first with link shared in your email.",
+    });
+    // return next(new ApiError(403, "Please verify your account first."));
+  }
+  try {
+    const logResponse = await fetch(process.env.LOGIN_SHEET_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        name: user.firstName + " " + user.lastName,
+        role: user.role,
+        email: email,
+        phoneNumber: user.phoneNumber,
+      }),
+    });
+
+    const logResult = await logResponse.text();
+    console.log("Login logged:", logResult);
+  } catch (err) {
+    console.error("Google Sheet logging failed:", err.message);
+    // Continue anyway; don't block login
+  }
   sendToken(user, 200, res);
 });
 
@@ -79,21 +160,18 @@ exports.userSignup = asyncHandler(async (req, res, next) => {
     verificationMethod,
   });
   try {
-    const sheetResponse = await fetch(
-      "https://script.google.com/macros/s/AKfycbzUfv2pg36kDzd4CBnHMbapV7mlwinJ7JuYFx9-MkLcUIXdI85A7mZAj3IOGP0oVNQB0A/exec",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          firstName,
-          lastName,
-          email,
-          phone,
-        }),
-      }
-    );
+    const sheetResponse = await fetch(process.env.REGN_SHEET_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        name: firstName + " " + lastName,
+        email,
+        phoneNumber: phone,
+        role: "User",
+      }),
+    });
 
     const text = await sheetResponse.text();
     console.log("Google Sheet response:", text);
@@ -182,65 +260,6 @@ exports.verifyOTP = asyncHandler(async (req, res, next) => {
       lastName: user.lastName,
     },
   });
-});
-
-// User Signin
-exports.userSignin = asyncHandler(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  console.log("LOGIN ATTEMPT FOR EMAIL:", email);
-
-  // Lowercase email to prevent mismatch
-  const user = await User.findOne({ email: email.toLowerCase() }).select(
-    "+password"
-  );
-
-  console.log("FOUND USER:", user);
-
-  if (!user) {
-    return res.status(201).json({
-      message: "No user found with this email. Please sign up.",
-    });
-    // return next(new ApiError(400, "User not found."));
-  }
-
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) {
-    return res.status(201).json({
-      message: "Invalid credentials. Please try again.",
-    });
-    // return next(new ApiError(401, "Invalid credentials."));
-  }
-
-  if (!user.isVerified) {
-    return res.status(201).json({
-      message:
-        "Please verify your account first with link shared in your email.",
-    });
-    // return next(new ApiError(403, "Please verify your account first."));
-  }
-  try {
-    const logResponse = await fetch(
-      "https://script.google.com/macros/s/AKfycbz3UuGlnTT86dsLfcfqfL1Ep_H05MmlplarRc53t4sUNHJp9UBLV1Fl7WKp-yaqct-HMg/exec",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams({
-          type: "login",
-          email: email,
-        }),
-      }
-    );
-
-    const logResult = await logResponse.text();
-    console.log("Login logged:", logResult);
-  } catch (err) {
-    console.error("Google Sheet logging failed:", err.message);
-    // Continue anyway; don't block login
-  }
-  sendToken(user, 200, res);
 });
 
 // User Signout
