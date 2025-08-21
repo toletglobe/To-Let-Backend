@@ -226,7 +226,7 @@ exports.checkUserCouponUsage = async (req, res) => {
     console.log(req.body)
     console.log(couponCode)
     console.log("Checking coupon usage for user:", userId);
-
+  
     // Find the user by ID
     const user = await User.findById(userId);
     if (!user) {
@@ -234,7 +234,7 @@ exports.checkUserCouponUsage = async (req, res) => {
     }
 
     // If the user is Admin then give coupon validity true
-    if(user.role === "admin"){
+    if(user.role === "admin" || user.role === "intermidiate"){
       return res.status(200).json({ 
         valid: true,
         message: "Coupon Applied"
