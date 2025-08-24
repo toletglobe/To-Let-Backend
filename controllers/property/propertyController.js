@@ -474,14 +474,46 @@ const deleteProperty = async (req, res) => {
         .json({ message: "Unauthorized: You do not own this property" });
     }
 
-    // Delete the property
+    // Delete images from Cloudinary if they exist
+    if (property.images && property.images.length > 0) {
+      console.log("Deleting images from Cloudinary:", property.images.length);
+
+      try {
+        const deleteImagePromises = property.images.map((imageUrl) =>
+          deleteFromCloudinary(imageUrl)
+        );
+        await Promise.all(deleteImagePromises);
+        console.log("Images deleted from Cloudinary successfully");
+      } catch (error) {
+        console.error("Error deleting images from Cloudinary:", error);
+        // Continue with property deletion even if Cloudinary deletion fails
+      }
+    }
+
+    // Delete videos from Cloudinary if they exist
+    if (property.videos && property.videos.length > 0) {
+      console.log("Deleting videos from Cloudinary:", property.videos.length);
+
+      try {
+        const deleteVideoPromises = property.videos.map((videoUrl) =>
+          deleteFromCloudinary(videoUrl)
+        );
+        await Promise.all(deleteVideoPromises);
+        console.log("Videos deleted from Cloudinary successfully");
+      } catch (error) {
+        console.error("Error deleting videos from Cloudinary:", error);
+        // Continue with property deletion even if Cloudinary deletion fails
+      }
+    }
+
+    // Delete the property from database
     await Property.findByIdAndDelete(propertyId);
 
     return res.status(200).json({
-      // statusCode: 200,
-      message: "Property deleted successfully.",
+      message: "Property and associated media deleted successfully.",
     });
   } catch (error) {
+    console.error("Error in deleteProperty:", error);
     return res.status(500).json({ message: error.message });
   }
 };

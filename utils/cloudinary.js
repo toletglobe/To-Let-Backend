@@ -60,22 +60,38 @@ const deleteFromCloudinary = async (imageUrl) => {
     }
 
     // Extract public_id from Cloudinary URL
-    const urlParts = imageUrl.split("/");
-    const filenameWithExtension = urlParts[urlParts.length - 1];
-    const publicId = filenameWithExtension.split(".")[0];
+    // Example URL: https://res.cloudinary.com/dxhgvsse5/image/upload/v1756061707/mtcy4ri7gbvmkwbh6hed.jpg
+    const urlMatch = imageUrl.match(
+      /\/upload\/(?:v\d+\/)?([^\/]+)\.(jpg|jpeg|png|gif|webp|mp4|mov|avi)$/i
+    );
 
-    // Get the folder path if it exists
-    const folderPath = urlParts.slice(-2, -1)[0]; // Get the folder name
-    const fullPublicId = folderPath ? `${folderPath}/${publicId}` : publicId;
+    if (!urlMatch) {
+      console.warn("Could not extract public_id from URL:", imageUrl);
+      return false;
+    }
 
-    console.log("Deleting from Cloudinary:", fullPublicId);
+    const publicId = urlMatch[1];
+    const fileExtension = urlMatch[2].toLowerCase();
 
-    const result = await cloudinary.uploader.destroy(fullPublicId, {
-      resource_type: "image",
+    // Determine resource type based on file extension
+    let resourceType = "image"; // default
+    if (["mp4", "mov", "avi"].includes(fileExtension)) {
+      resourceType = "video";
+    }
+
+    console.log(
+      "Deleting from Cloudinary:",
+      publicId,
+      "Resource type:",
+      resourceType
+    );
+
+    const result = await cloudinary.uploader.destroy(publicId, {
+      resource_type: resourceType,
     });
 
     console.log("Deletion successful:", result);
-    return true;
+    return result.result === "ok" || result.result === "not found";
   } catch (error) {
     console.error("Cloudinary deletion failed:", error);
     return false;
