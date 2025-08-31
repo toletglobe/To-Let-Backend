@@ -6,36 +6,45 @@ const { ApiError } = require("../../utils/ApiError.js");
 const path = require("path");
 const fs = require("fs");
 
-const getPropertiesByUserId = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const properties = await Property.find({ userId: userId });
-    return res.status(200).json(properties);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
+// Enhanced function to calculate distance between two coordinates
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
 };
 
-const getPropertyById = async (req, res) => {
-  try {
-    const propertyId = req.params.id;
+// City center coordinates for fallback
+const cityCoordinates = {
+  Lucknow: { lat: 26.8467, lng: 80.9462 },
+  Ayodhya: { lat: 26.7922, lng: 82.1998 },
+  Vellore: { lat: 12.9165, lng: 79.1325 },
+  Kota: { lat: 25.2138, lng: 75.8648 },
+};
 
-    if (!propertyId) {
-      return res.status(400).json({ message: "Property ID is required" });
-    }
-
-    const property = await Property.findById(propertyId)
-      .populate("reviews") // Keep this if you need review details
-      .lean(); // Converts result to a plain JS object => reduces overhead and memory usage
-
-    if (!property) {
-      return res.status(404).json({ message: "Property not found" });
-    }
-
-    return res.status(200).json(property);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
+// Locality coordinates for better matching
+const localityCoordinates = {
+  Lucknow: {
+    Kamta: { lat: 26.8868, lng: 81.0586 },
+    Nishatganj: { lat: 26.87, lng: 80.95 },
+    Hazratganj: { lat: 26.85, lng: 80.95 },
+    "Gomti Nagar": { lat: 26.85, lng: 81.0 },
+    "Sushant Golf City": { lat: 26.78, lng: 81.02 },
+    Khargapur: { lat: 26.83, lng: 81.03 },
+    Chinhat: { lat: 26.88, lng: 81.05 },
+    "Indira Nagar": { lat: 26.87, lng: 81.0 },
+    Aliganj: { lat: 26.88, lng: 80.94 },
+    "Vinay Khand": { lat: 26.85, lng: 81.0 },
+    // Add more localities as needed
+  },
+  // Add other cities as needed
 };
 
 const getFilteredProperties = async (req, res) => {
@@ -56,7 +65,7 @@ const getFilteredProperties = async (req, res) => {
 
     const filter = {};
 
-    // Handling BHK filter
+    // Build filter object (keeping existing logic)
     if (bhk) {
       const bhkValues = bhk
         .split(",")
@@ -68,7 +77,6 @@ const getFilteredProperties = async (req, res) => {
       }
     }
 
-    // Handling residential filter
     if (residential) {
       const residentialTypes = residential
         .split(",")
@@ -76,7 +84,6 @@ const getFilteredProperties = async (req, res) => {
       filter.propertyType = { $in: residentialTypes };
     }
 
-    // Handling commercial filter
     if (commercial) {
       const commercialTypes = commercial
         .split(",")
@@ -86,21 +93,15 @@ const getFilteredProperties = async (req, res) => {
       };
     }
 
-    // Handling preferenceHousing filter
     if (preferenceHousing) {
-      if (preferenceHousing === "Any") {
-        // No filter needed for 'Any'
-      } else {
+      if (preferenceHousing !== "Any") {
         filter.preference = preferenceHousing;
       }
     }
 
-    // Handling genderPreference filter
     if (genderPreference && preferenceHousing !== "Family") {
       if (genderPreference === "Others") {
-        filter.bachelors = {
-          $in: ["Boys", "Girls"],
-        };
+        filter.bachelors = { $in: ["Boys", "Girls"] };
       } else {
         filter.bachelors = {
           $in: Array.isArray(genderPreference)
@@ -110,17 +111,13 @@ const getFilteredProperties = async (req, res) => {
       }
     }
 
-    // Handling houseType filter
     if (houseType) {
       const houseTypes = houseType.split(",");
       filter.type = { $in: houseTypes };
     }
 
-    // Getting data from data.json to validate the areas
+    // Enhanced area and locality handling
     let validAreas = null;
-    const dataFilePath = path.join(__dirname, "..", "..", "data.json");
-    const rawData = fs.readFileSync(dataFilePath, "utf-8");
-    const areaData = JSON.parse(rawData);
     const toTitleCase = (text) => {
       return text
         .toLowerCase()
@@ -129,15 +126,17 @@ const getFilteredProperties = async (req, res) => {
         .join(" ");
     };
 
-    // Utility function to fetch valid areas and their neighboring areas
+    // Load area data
+    const dataFilePath = path.join(__dirname, "..", "..", "data.json");
+    const rawData = fs.readFileSync(dataFilePath, "utf-8");
+    const areaData = JSON.parse(rawData);
+
     const getValidAreas = (areas, areaData) => {
       const formattedAreas = areas.map(toTitleCase);
-
       return areaData
         .filter((entry) => {
           const entryArea = toTitleCase(entry.Area.trim());
           const entryAREA = toTitleCase(entry.AREA.trim());
-
           return (
             formattedAreas.includes(entryArea) ||
             formattedAreas.includes(entryAREA)
@@ -145,144 +144,240 @@ const getFilteredProperties = async (req, res) => {
         })
         .flatMap((entry) => {
           const mainArea = toTitleCase(entry.Area.trim());
-
-          // Extract neighboring areas safely
           const neighbors = entry["Neighbouring Areas"]
             ? entry["Neighbouring Areas"]
                 .split(",")
                 .map((a) => toTitleCase(a.trim()))
             : [];
-
           return [mainArea, ...neighbors];
         });
     };
 
-    // Handling city filter
+    // Handle city filter
     if (city) {
       filter.city = city;
+
       if (locality) {
         filter.locality = toTitleCase(locality);
       }
+
       if (area) {
         const areas = area.split(",").map((a) => a.trim());
         validAreas = getValidAreas(areas, areaData);
         if (validAreas.length > 0) {
           filter.area = { $in: validAreas };
         }
-        console.log(validAreas);
       }
     }
 
-    // Pagination logic
+    // Get all properties matching the filter
+    const allProperties = await Property.find(filter);
+
+    // Enhanced sorting with geographic prioritization
+    const sortPropertiesWithPriority = (
+      properties,
+      searchedLocality,
+      searchedAreas,
+      cityName
+    ) => {
+      return properties.sort((a, b) => {
+        let aPriority = 0;
+        let bPriority = 0;
+
+        // 1. Availability Status Priority (Available first)
+        if (
+          a.availabilityStatus === "Available" &&
+          b.availabilityStatus !== "Available"
+        ) {
+          aPriority += 1000;
+        } else if (
+          a.availabilityStatus !== "Available" &&
+          b.availabilityStatus === "Available"
+        ) {
+          bPriority += 1000;
+        }
+
+        // 2. Exact Area Match Priority (highest)
+        if (searchedAreas && searchedAreas.length > 0) {
+          const aArea = toTitleCase(a.area || "");
+          const bArea = toTitleCase(b.area || "");
+
+          const searchedAreasFormatted = searchedAreas.map(toTitleCase);
+
+          if (searchedAreasFormatted.includes(aArea)) aPriority += 5000;
+          if (searchedAreasFormatted.includes(bArea)) bPriority += 5000;
+        }
+
+        // 3. Exact Locality Match Priority (high)
+        if (searchedLocality) {
+          const aLocality = toTitleCase(a.locality || "");
+          const bLocality = toTitleCase(b.locality || "");
+          const searchedLocalityFormatted = toTitleCase(searchedLocality);
+
+          if (aLocality === searchedLocalityFormatted) aPriority += 300;
+          if (bLocality === searchedLocalityFormatted) bPriority += 300;
+        }
+
+        // 4. Geographic Distance Priority (if coordinates are available)
+        if (
+          searchedLocality &&
+          cityName &&
+          localityCoordinates[cityName]?.[searchedLocality]
+        ) {
+          const searchCenter = localityCoordinates[cityName][searchedLocality];
+
+          const aLat = parseFloat(a.latitude);
+          const aLng = parseFloat(a.longitude);
+          const bLat = parseFloat(b.latitude);
+          const bLng = parseFloat(b.longitude);
+
+          if (!isNaN(aLat) && !isNaN(aLng) && !isNaN(bLat) && !isNaN(bLng)) {
+            const distanceA = calculateDistance(
+              searchCenter.lat,
+              searchCenter.lng,
+              aLat,
+              aLng
+            );
+            const distanceB = calculateDistance(
+              searchCenter.lat,
+              searchCenter.lng,
+              bLat,
+              bLng
+            );
+
+            // Closer properties get higher priority (inverse relationship)
+            // Properties within 5km get bonus priority
+            if (distanceA <= 2) aPriority += Math.floor((2 - distanceA) * 100);
+            if (distanceB <= 2) bPriority += Math.floor((2 - distanceB) * 100);
+          }
+
+          // Add medium distance priority
+          if (distanceA > 2 && distanceA <= 5)
+            aPriority += Math.floor((5 - distanceA) * 50);
+          if (distanceB > 2 && distanceB <= 5)
+            bPriority += Math.floor((5 - distanceB) * 50);
+
+          // Add far distance priority
+          if (distanceA > 5 && distanceA <= 10)
+            aPriority += Math.floor((10 - distanceA) * 20);
+          if (distanceB > 5 && distanceB <= 10)
+            bPriority += Math.floor((10 - distanceB) * 20);
+        }
+
+        // 5. Address-based Area/Locality Match (fallback)
+        if (a.address || b.address) {
+          const aAddress = (a.address || "").toLowerCase();
+          const bAddress = (b.address || "").toLowerCase();
+
+          if (
+            searchedLocality &&
+            aAddress.includes(searchedLocality.toLowerCase())
+          ) {
+            aPriority += 100;
+          }
+          if (
+            searchedLocality &&
+            bAddress.includes(searchedLocality.toLowerCase())
+          ) {
+            bPriority += 100;
+          }
+
+          if (searchedAreas) {
+            searchedAreas.forEach((area) => {
+              if (aAddress.includes(area.toLowerCase())) aPriority += 80;
+              if (bAddress.includes(area.toLowerCase())) bPriority += 80;
+            });
+          }
+        }
+
+        // 6. Creation Date (newest first) - tiebreaker
+        if (aPriority === bPriority) {
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+
+        return bPriority - aPriority; // Higher priority first
+      });
+    };
+
+    // Apply enhanced sorting
+    const searchedAreas = area ? area.split(",").map((a) => a.trim()) : null;
+    const sortedProperties = sortPropertiesWithPriority(
+      allProperties,
+      locality,
+      searchedAreas,
+      city
+    );
+
+    // Pagination
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
+    const paginatedProperties = sortedProperties.slice(skip, skip + limitNum);
 
-    // If user has searched for specific area or locality, use custom sorting
-    if (area || locality) {
-      // First, get all properties with the current filter
-      const allProperties = await Property.find(filter);
+    const total = allProperties.length;
+    const totalPages = Math.ceil(total / limitNum);
 
-      // Separate properties by availability status first
-      const availableProperties = [];
-      const unavailableProperties = [];
+    // Enhanced response with search context
+    const response = {
+      success: true,
+      data: paginatedProperties,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        totalPages: totalPages,
+        total: total,
+      },
+      searchContext: {
+        city: city || null,
+        locality: locality || null,
+        areas: searchedAreas || [],
+        prioritizedResults: true,
+      },
+    };
 
-      allProperties.forEach((property) => {
-        if (property.availabilityStatus === "Available") {
-          availableProperties.push(property);
+    // Add search statistics
+    if (locality || (searchedAreas && searchedAreas.length > 0)) {
+      const stats = {
+        exactAreaMatches: 0,
+        exactLocalityMatches: 0,
+        nearbyMatches: 0,
+        otherCityMatches: 0,
+      };
+
+      sortedProperties.forEach((property) => {
+        const propertyArea = toTitleCase(property.area || "");
+        const propertyLocality = toTitleCase(property.locality || "");
+
+        let isExactAreaMatch = false;
+        let isExactLocalityMatch = false;
+
+        if (searchedAreas) {
+          const searchedAreasFormatted = searchedAreas.map(toTitleCase);
+          if (searchedAreasFormatted.includes(propertyArea)) {
+            isExactAreaMatch = true;
+          }
+        }
+
+        if (locality && propertyLocality === toTitleCase(locality)) {
+          isExactLocalityMatch = true;
+        }
+
+        if (isExactAreaMatch) {
+          stats.exactAreaMatches++;
+        } else if (isExactLocalityMatch) {
+          stats.exactLocalityMatches++;
+        } else if (property.city === city) {
+          stats.nearbyMatches++;
         } else {
-          unavailableProperties.push(property);
+          stats.otherCityMatches++;
         }
       });
 
-      // Function to sort properties by area/locality priority
-      const sortByAreaPriority = (properties) => {
-        return properties.sort((a, b) => {
-          let aPriority = 0;
-          let bPriority = 0;
-
-          // Check area priority
-          if (area && validAreas && validAreas.length > 0) {
-            const aArea = toTitleCase(a.area || "");
-            const bArea = toTitleCase(b.area || "");
-
-            if (validAreas.includes(aArea)) aPriority += 2;
-            if (validAreas.includes(bArea)) bPriority += 2;
-          }
-
-          // Check locality priority
-          if (locality) {
-            const aLocality = toTitleCase(a.locality || "");
-            const bLocality = toTitleCase(b.locality || "");
-            const searchedLocality = toTitleCase(locality);
-
-            if (aLocality === searchedLocality) aPriority += 1;
-            if (bLocality === searchedLocality) bPriority += 1;
-          }
-
-          // If priority is the same, sort by creation date (newest first)
-          if (aPriority === bPriority) {
-            return new Date(b.createdAt) - new Date(a.createdAt);
-          }
-
-          // Higher priority first
-          return bPriority - aPriority;
-        });
-      };
-
-      // Sort available properties by area/locality priority
-      const sortedAvailableProperties = sortByAreaPriority(availableProperties);
-
-      // Sort unavailable properties by area/locality priority
-      const sortedUnavailableProperties = sortByAreaPriority(
-        unavailableProperties
-      );
-
-      // Combine: Available properties first, then unavailable
-      const sortedProperties = [
-        ...sortedAvailableProperties,
-        ...sortedUnavailableProperties,
-      ];
-
-      // Apply pagination
-      const startIndex = skip;
-      const endIndex = skip + limitNum;
-      const paginatedProperties = sortedProperties.slice(startIndex, endIndex);
-
-      const total = allProperties.length;
-      const totalPages = Math.ceil(total / limitNum);
-
-      // Send successful response with prioritized properties
-      res.status(200).json({
-        success: true,
-        data: paginatedProperties,
-        page: pageNum,
-        limit: limitNum,
-        totalPages: totalPages,
-      });
-    } else {
-      // If no area/locality search, use the original sorting
-      const properties = await Property.find(filter)
-        .sort({
-          availabilityStatus: 1,
-          createdAt: -1,
-        })
-        .skip(skip)
-        .limit(limitNum);
-
-      const total = await Property.find(filter).countDocuments();
-      const totalPages = Math.ceil(total / limitNum);
-
-      res.status(200).json({
-        success: true,
-        data: properties,
-        page: pageNum,
-        limit: limitNum,
-        totalPages: totalPages,
-      });
+      response.searchStats = stats;
     }
+
+    res.status(200).json(response);
   } catch (error) {
-    // Send error response
     res.status(500).json({
       success: false,
       message: "Server Error",
@@ -291,19 +386,48 @@ const getFilteredProperties = async (req, res) => {
   }
 };
 
+// Keep other existing functions unchanged
+const getPropertiesByUserId = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const properties = await Property.find({ userId: userId });
+    return res.status(200).json(properties);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const getPropertyById = async (req, res) => {
+  try {
+    const propertyId = req.params.id;
+
+    if (!propertyId) {
+      return res.status(400).json({ message: "Property ID is required" });
+    }
+
+    const property = await Property.findById(propertyId)
+      .populate("reviews")
+      .lean();
+
+    if (!property) {
+      return res.status(404).json({ message: "Property not found" });
+    }
+
+    return res.status(200).json(property);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 const getPropertiesByStatus = async (req, res) => {
   try {
     const { status = "Available", page = 1, limit = 9 } = req.query;
-
-    // Define the filter for availabilityStatus
     const filter = { availabilityStatus: status };
 
-    // Pagination setup
     const pageNum = Number(page);
     const limitNum = Number(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    // Fetch properties based on availabilityStatus with pagination
     const properties = await Property.find(filter).skip(skip).limit(limitNum);
 
     res.status(200).json({
