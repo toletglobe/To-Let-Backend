@@ -26,7 +26,7 @@ const PropertySchema = new Schema({
     type: String,
     enum: [
       "Lives in same property",
-      "Lives in same city",
+      "Lives in different property",
       "Lives in different city",
     ],
     required: true,
@@ -59,10 +59,6 @@ const PropertySchema = new Schema({
     type: String,
     enum: ["House", "Flat", "PG", "Office", "Shop", "Warehouse", "NA"],
   },
-  // petsAllowed: {
-  //   type: String,
-  //   enum: ["Yes", "No", "NA"],
-  // },
   preference: {
     type: String,
     enum: ["Bachelors", "Family", "Any", "Both", "NA"],
@@ -90,14 +86,6 @@ const PropertySchema = new Schema({
     enum: ["Western", "Indian", "Both", "NA"],
     required: true,
   },
-  // coolingFacility: {
-  //   type: String,
-  //   enum: ["AC", "Fan", "Cooler", "NA"],
-  // },
-  // carParking: {
-  //   type: String,
-  //   required: true,
-  // },
   rent: {
     type: String,
   },
@@ -122,25 +110,16 @@ const PropertySchema = new Schema({
   appliances: [
     {
       type: [String],
-      required: true,
     },
   ],
   amenities: [
     {
       type: [String],
-      required: true,
     },
   ],
   aboutTheProperty: {
     type: String,
-    required: true,
   },
-  // locationLink: {
-  //   type: String,
-  // },
-  // addressVerification: {
-  //   type: String,
-  // },
 
   availabilityStatus: {
     type: String,
