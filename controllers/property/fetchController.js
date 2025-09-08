@@ -95,7 +95,8 @@ const getFilteredProperties = async (req, res) => {
 
     if (preferenceHousing) {
       if (preferenceHousing !== "Any") {
-        filter.preference = preferenceHousing;
+        // Default of "Both" added
+        filter.preference = [preferenceHousing, "Both"];
       }
     }
 
